@@ -2,16 +2,23 @@
   "name": "brain-pods",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "ts-node": "ts-node"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@heroicons/react": "^2.1.5",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/supabase-js": "^2.45.5",
     "agora-rtc-react": "^2.3.0",
     "agora-rtc-sdk-ng": "^4.22.1",
     "dotenv": "^16.4.5",
+    "groq-sdk": "^0.7.0",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18"
@@ -24,6 +31,8 @@
     "eslint-config-next": "14.2.15",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.6.3"
   }
 }
