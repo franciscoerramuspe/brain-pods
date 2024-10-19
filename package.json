@@ -15,7 +15,6 @@
     "@heroicons/react": "^2.1.5",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.45.5",
-    "@supabase/supabase-js": "^2.45.5",
     "agora-rtc-react": "^2.3.0",
     "agora-rtc-sdk-ng": "^4.22.1",
     "dotenv": "^16.4.5",
