@@ -1,64 +1,72 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
+import { Snackbar } from "@/components/ui/snackbar";
 
 export const Basics: React.FC = () => {
   const [podId, setPodId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSnackbarOpen, setIsSnackbarOpen] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleJoin = async () => {
-    if (podId.trim()) {
-      setIsLoading(true);
-      const isValid = await validatePodId(podId);
-      setIsLoading(false);
+  const handleJoinPod = async () => {
+    setIsLoading(true);
 
-      if (isValid) {
-        router.push(`/pod/${podId}`);
-      } else {
-        alert("Invalid pod ID. Please check and try again.");
-      }
-    }
-  };
-
-  const validatePodId = async (podId: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase
         .from("pod")
-        .select("id")
+        .select("is_active")
         .eq("id", podId)
-        .eq("is_active", true)
-        .eq("is_public", true)
         .single();
 
-      if (error || !data) {
-        return false;
+      if (error) throw error;
+
+      if (data && data.is_active) {
+        router.push(`/pod/${podId}`);
+      } else {
+        setIsSnackbarOpen(true);
+        setTimeout(() => setIsSnackbarOpen(false), 3000);
       }
-      return true;
     } catch (error) {
-      console.error("Error fetching pod:", error);
-      return false;
+      console.error("Error joining pod: ", error);
+      setIsSnackbarOpen(true);
+      setTimeout(() => setIsSnackbarOpen(false), 3000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="bg-white border-none rounded-full shadow-lg px-4 py-2 flex items-center space-x-2 dark:bg-zinc-950 dark:border-zinc-800">
-      <Input
-        className="w-32 h-8 text-sm border-none focus-visible:ring-0 focus-visible:ring-offset-0"
-        onChange={(e) => setPodId(e.target.value)}
+    <div className="join-room flex flex-col gap-4 bg-gray-800 p-4 rounded-md h-full w-full ">
+      <input
+        onChange={(e) => {
+          setPodId(e.target.value);
+          setIsSnackbarOpen(false);
+        }}
         placeholder="Enter your code"
         value={podId}
       />
-      <Button
-        className="h-8 px-3 text-sm"
-        onClick={handleJoin}
-        disabled={!podId.trim() || isLoading} // Disable button during loading or when no podId
+      <button
+        className={`join-podId px-4 py-2 rounded-md bg-gray-800 text-white ${
+          !podId || isLoading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
+        disabled={!podId || isLoading}
+        onClick={handleJoinPod}
       >
-        {isLoading ? "Joining..." : "Join"}
-      </Button>
+        {isLoading ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+          </div>
+        ) : (
+          <span>Join Room</span>
+        )}
+      </button>
+      <Snackbar
+        message="Pod not found or inactive."
+        isOpen={isSnackbarOpen}
+        onClose={() => setIsSnackbarOpen(false)}
+      />
     </div>
   );
 };

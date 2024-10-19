@@ -20,8 +20,12 @@ export default function NewPod() {
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
+<<<<<<< HEAD
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
   const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
+=======
+  const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
+>>>>>>> e0635beb53865150b5681b2076059bc3ae51d227
 
   // Fetch the enum values for "tags" from Supabase
   useEffect(() => {
@@ -63,6 +67,42 @@ export default function NewPod() {
     };
   }, [router]);
 
+  const createPod = async () => {
+    if (!user || !podName || podTags.length === 0) return;
+
+    setIsCreatingPod(true);
+
+    try {
+      const { data: podData, error: podError } = await supabase.from("pod").insert({
+        owner_id: user?.id,
+        is_active: true,
+        is_premium: false,
+        is_public: true,
+      })
+      .select()
+      .single();
+
+    if (podError) throw podError;
+
+    // Insert pod topics
+    if (podTags.length > 0) {
+      const { error: topicError } = await supabase.from("pod_topic").insert(podTags.map(tag => ({
+        pod_id: podData.id,
+        topic_name: tag,
+      })));
+
+      if (topicError) throw topicError;
+    }
+
+    // Redirect to the new pod
+    router.push(`/pod/${podData.id}`);
+  } catch (error) {
+    console.error('Error creating pod: ', error);
+  } finally {
+    setIsCreatingPod(false);
+  }
+};
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -76,6 +116,7 @@ export default function NewPod() {
           New Pod
         </h1>
 
+<<<<<<< HEAD
         <div className="flex-grow flex flex-col items-center justify-center mt-8">
           <div
             className={`flex flex-col items-center justify-center w-fit rounded-lg p-0 transition-all duration-300  ${
@@ -129,6 +170,9 @@ export default function NewPod() {
             </Button>
           </div>
         </div>
+=======
+        <Button className="mt-4" onClick={createPod} disabled={!podName || isCreatingPod}>{isCreatingPod ? "Creating Pod..." : "Create Pod"}</Button>
+>>>>>>> e0635beb53865150b5681b2076059bc3ae51d227
       </div>
     </div>
   );
