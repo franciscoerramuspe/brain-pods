@@ -17,6 +17,7 @@ export default function NewPod() {
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
+  const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
 
   const tagsList = [
     { value: "react", label: "React" },
@@ -51,36 +52,53 @@ export default function NewPod() {
   }
 
   return (
-    <div className="min-h-screen bg-[#323232]">
+    <div className="h-screen bg-[#323232] flex flex-col">
       <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
 
-      <div className="flex flex-col items-center justify-center h-full">
-        <h1 className="text-4xl text-gray-200 font-adversecase mb-4">
+      <div className="flex flex-col items-center justify-center">
+        <h1 className="text-4xl text-gray-200 font-adversecase mb-8">
           New Pod
         </h1>
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex flex-col p-4 max-w-xl w-full gap-4">
-            <Input
-              type="text"
-              placeholder="Pod Name"
-              value={podName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPodName(e.target.value)
-              }
-            />
-            <MultiSelect
-              options={tagsList}
-              onValueChange={setPodTags}
-              defaultValue={podTags}
-              placeholder="Select tags"
-              animation={0}
-              maxCount={3}
-            />
-          </div>
-          <ContextProvider />
-        </div>
 
-        <Button className="mt-4">Create Pod</Button>
+        <div className="flex-grow flex flex-col items-center justify-center mt-8">
+          <div
+            className={`flex flex-col items-center justify-center w-fit rounded-lg p-0 transition-all duration-300  ${
+              isButtonHovered
+                ? "bg-gradient-to-r from-pink-600 to-purple-600 backdrop-blur-lg p-1"
+                : "bg-transparent"
+            }`}
+          >
+            <div className="bg-[#323232] p-5 rounded-[calc(0.60rem-0.25rem)] border border-[#4A4945]">
+              <div className="flex flex-col max-w-xl w-full gap-4 pb-4">
+                <Input
+                  type="text"
+                  placeholder="Pod Name"
+                  value={podName}
+                  className="dark:bg-[#ffffff] dark:border-[#090908] dark:text-[#090908]"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPodName(e.target.value)
+                  }
+                />
+                <MultiSelect
+                  options={tagsList}
+                  onValueChange={setPodTags}
+                  defaultValue={podTags}
+                  placeholder="Select Tags"
+                  animation={0}
+                  maxCount={3}
+                />
+              </div>
+              <ContextProvider />
+            </div>
+          </div>
+          <Button
+            className="mt-4 mb-0"
+            onMouseOver={() => setIsButtonHovered(true)}
+            onMouseLeave={() => setIsButtonHovered(false)}
+          >
+            Create Pod
+          </Button>
+        </div>
       </div>
     </div>
   );
