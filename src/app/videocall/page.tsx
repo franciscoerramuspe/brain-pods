@@ -5,14 +5,14 @@ dotenv.config();
 
 const appId = process.env.AGORA_API_KEY;
 
-const AgoraComponent = dynamic(
-  () => import("../../components/videocall/AgoraComponent"),
+const VideoCall = dynamic(
+  () => import("../../components/videocall/VideoCall"),
   {
     ssr: false,
     loading: () => <p>Loading...</p>,
   }
 );
 
-const HomePage = () => <AgoraComponent appId={appId || ""} />;
+const HomePage = () => <VideoCall appId={appId || ""} />;
 
 export default HomePage;
