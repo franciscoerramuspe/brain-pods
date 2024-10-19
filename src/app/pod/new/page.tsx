@@ -17,6 +17,7 @@ export default function NewPod() {
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
+  const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
 
   const tagsList = [
     { value: "react", label: "React" },
@@ -45,6 +46,42 @@ export default function NewPod() {
       authListener.subscription.unsubscribe();
     };
   }, [router]);
+
+  const createPod = async () => {
+    if (!user || !podName || podTags.length === 0) return;
+
+    setIsCreatingPod(true);
+
+    try {
+      const { data: podData, error: podError } = await supabase.from("pod").insert({
+        owner_id: user?.id,
+        is_active: true,
+        is_premium: false,
+        is_public: true,
+      })
+      .select()
+      .single();
+
+    if (podError) throw podError;
+
+    // Insert pod topics
+    if (podTags.length > 0) {
+      const { error: topicError } = await supabase.from("pod_topic").insert(podTags.map(tag => ({
+        pod_id: podData.id,
+        topic_name: tag,
+      })));
+
+      if (topicError) throw topicError;
+    }
+
+    // Redirect to the new pod
+    router.push(`/pod/${podData.id}`);
+  } catch (error) {
+    console.error('Error creating pod: ', error);
+  } finally {
+    setIsCreatingPod(false);
+  }
+};
 
   if (!user) {
     return <div>Loading...</div>;
@@ -80,7 +117,7 @@ export default function NewPod() {
           <ContextProvider />
         </div>
 
-        <Button className="mt-4">Create Pod</Button>
+        <Button className="mt-4" onClick={createPod} disabled={!podName || isCreatingPod}>{isCreatingPod ? "Creating Pod..." : "Create Pod"}</Button>
       </div>
     </div>
   );
