@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import Logo from '../../components/Logo';
 import SearchBar from '../../components/SearchBar';
-import UserInfo from '../../components/UserInfo';
 import { User } from '@supabase/supabase-js';
+import Header from '../../components/Header';
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
@@ -36,13 +35,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#323232]">
-      <header className="flex justify-between items-center p-4">
-        <div className="flex items-center">
-          <Logo className="w-12 h-12 mr-4" />
-          <h1 className="text-4xl font-bold text-white font-adversecase">Brain Pods</h1>
-        </div>
-        <UserInfo user={user} />
-      </header>
+      <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
       <main className="p-4">
         <SearchBar />
       </main>
