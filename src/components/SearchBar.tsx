@@ -1,9 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
-import { AiIcon, LightningIcon } from "./Icons";
+import { LightningIcon, TagIcon, StarIcon, LetterIcon } from "./Icons";
 import { motion } from "framer-motion";
+
 const SearchBar: React.FC = () => {
+  const options = [
+    {
+      value: "Search By Pod Name",
+      label: "Pod Name",
+      icon: <LetterIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
+    {
+      value: "Search By Tag",
+      label: "Tags",
+      icon: <TagIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
+    {
+      value: "Ask AI",
+      label: "Ask AI",
+      icon: <StarIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
+  ];
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("Pod Name");
+  const [selectedOption, setSelectedOption] = useState(options[0]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,24 +41,6 @@ const SearchBar: React.FC = () => {
     };
   }, []);
 
-  const options = [
-    {
-      value: "Search By Pod Name",
-      label: "Pod Name",
-      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
-    },
-    {
-      value: "Search By Tag",
-      label: "Tags",
-      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
-    },
-    {
-      value: "Ask AI",
-      label: "Ask AI",
-      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
-    },
-  ];
-
   return (
     <div
       className={`flex items-stretch bg-[#4A4A4A] rounded-2xl w-full max-w-2xl mx-auto relative h-14 transition-all duration-300 p-1 ${
@@ -50,10 +51,10 @@ const SearchBar: React.FC = () => {
     >
       <div ref={dropdownRef} className="relative">
         <button
-          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A]  transition-colors duration-300 rounded-l-2xl h-full"
+          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-l-2xl h-full"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <AiIcon className="w-8 h-8 " stroke="white" /> {/* Icon with hover */}
+          {selectedOption.icon}
         </button>
         {isDropdownOpen && (
           <motion.div
@@ -69,7 +70,7 @@ const SearchBar: React.FC = () => {
                 className="w-full flex items-center px-4 py-3 text-sm text-white hover:bg-[#4A4A4A] transition-all duration-300 rounded-lg"
                 onClick={() => {
                   setIsDropdownOpen(false);
-                  setSelectedOption(option.label);
+                  setSelectedOption(option);
                 }}
               >
                 {option.icon}
@@ -85,8 +86,7 @@ const SearchBar: React.FC = () => {
         className="bg-[#323232] text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg "
       />
       <button className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl">
-        <LightningIcon className="w-8 h-8 " stroke="white" />{" "}
-        {/* Icon with hover */}
+        <LightningIcon className="w-8 h-8" stroke="white" />
       </button>
     </div>
   );

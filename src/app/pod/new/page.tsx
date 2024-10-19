@@ -12,6 +12,9 @@ import ContextProvider from "../../../components/ContextProvider";
 
 export default function NewPod() {
   const [user, setUser] = useState<User | null>(null);
+  const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
+    []
+  );
   const router = useRouter();
 
   // Pod Variables
@@ -20,15 +23,27 @@ export default function NewPod() {
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
   const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
 
-  const tagsList = [
-    { value: "react", label: "React" },
-    { value: "angular", label: "Angular" },
-    { value: "vue", label: "Vue" },
-    { value: "svelte", label: "Svelte" },
-    { value: "ember", label: "Ember" },
-  ];
-
+  // Fetch the enum values for "tags" from Supabase
   useEffect(() => {
+    const fetchTags = async () => {
+      const { data, error } = await supabase
+        .from("pod_topic")
+        .select("id, topic_name");
+      if (error) {
+        console.error("Error fetching tags:", error);
+      } else {
+        // Assuming the tags come in a specific format, adapt accordingly:
+        const formattedTags = data.map((tag) => ({
+          value: tag.id,
+          label: tag.topic_name,
+        }));
+        setTagsList(formattedTags);
+      }
+    };
+
+    fetchTags();
+
+    // Handle authentication session
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN") {
@@ -85,7 +100,7 @@ export default function NewPod() {
                   }
                 />
                 <MultiSelect
-                  options={tagsList}
+                  options={tagsList} // Using the dynamic tagsList
                   onValueChange={setPodTags}
                   defaultValue={podTags}
                   placeholder="Select Tags"
