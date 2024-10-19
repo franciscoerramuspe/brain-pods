@@ -1,24 +1,27 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
-import SearchBar from '../../components/SearchBar';
-import { User } from '@supabase/supabase-js';
-import Header from '../../components/Header';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "../../lib/supabase";
+import SearchBar from "../../components/SearchBar";
+import { User } from "@supabase/supabase-js";
+import Header from "../../components/Header";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        setUser(session?.user ?? null);
-      } else if (event === 'SIGNED_OUT') {
-        router.push('/');
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN") {
+          setUser(session?.user ?? null);
+        } else if (event === "SIGNED_OUT") {
+          router.push("/");
+        }
       }
-    });
+    );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
