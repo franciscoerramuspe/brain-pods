@@ -11,6 +11,7 @@
   "dependencies": {
     "agora-rtc-react": "^2.3.0",
     "agora-rtc-sdk-ng": "^4.22.1",
+    "dotenv": "^16.4.5",
     "next": "14.2.15",
     "react": "^18",
     "react-dom": "^18"

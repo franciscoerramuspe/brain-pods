@@ -1,3 +1,5 @@
+"use client";
+import React, { useState, useEffect } from "react";
 import {
   LocalUser,
   RemoteUser,
@@ -8,18 +10,17 @@ import {
   usePublish,
   useRemoteUsers,
 } from "agora-rtc-react";
-import React, { useState } from "react";
 
-export const Basics = () => {
-  const [calling, setCalling] = useState(false);
+export const Basics: React.FC<{ appId: string }> = ({ appId }) => {
+  const [calling, setCalling] = useState<boolean>(false);
   const isConnected = useIsConnected();
-  const [appId, setAppId] = useState("");
-  const [channel, setChannel] = useState("");
+  const [channel, setChannel] = useState<string>("");
+  const [micOn, setMic] = useState<boolean>(true);
+  const [cameraOn, setCamera] = useState<boolean>(true);
 
-  useJoin({ appid: appId, channel: channel, token: null }, calling);
-  const [micOn, setMic] = useState(true);
-  const [cameraOn, setCamera] = useState(true);
-  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn, {
+  useJoin({ appid: appId || "", channel: channel, token: null }, calling);
+
+  const { localMicrophoneTrack } = useLocalMicrophoneTrack(true, {
     encoderConfig: {
       sampleRate: 48000,
       sampleSize: 16,
@@ -28,7 +29,7 @@ export const Basics = () => {
     },
   });
 
-  const { localCameraTrack } = useLocalCameraTrack(cameraOn, {
+  const { localCameraTrack } = useLocalCameraTrack(true, {
     encoderConfig: {
       width: 1280,
       height: 720,
@@ -37,8 +38,21 @@ export const Basics = () => {
       frameRate: 15,
     },
   });
+
   usePublish([localMicrophoneTrack, localCameraTrack]);
   const remoteUsers = useRemoteUsers();
+
+  useEffect(() => {
+    if (localMicrophoneTrack) {
+      localMicrophoneTrack.setEnabled(micOn);
+    }
+  }, [micOn, localMicrophoneTrack]);
+
+  useEffect(() => {
+    if (localCameraTrack) {
+      localCameraTrack.setEnabled(cameraOn);
+    }
+  }, [cameraOn, localCameraTrack]);
 
   return (
     <>
@@ -47,7 +61,6 @@ export const Basics = () => {
           <div className="user-list">
             <div className="user w-60 h-60">
               <LocalUser
-                audioTrack={localMicrophoneTrack}
                 cameraOn={cameraOn}
                 micOn={micOn}
                 videoTrack={localCameraTrack}
@@ -70,19 +83,16 @@ export const Basics = () => {
         ) : (
           <div className="join-room">
             <input
-              onChange={(e) => setAppId(e.target.value)}
-              placeholder="<Your app ID>"
-              value={appId}
-            />
-            <input
-              onChange={(e) => setChannel(e.target.value)}
+              onChange={(e) => {
+                setChannel(e.target.value);
+                console.log(appId);
+              }}
               placeholder="<Your channel Name>"
               value={channel}
             />
-
             <button
-              className={`join-channel ${!appId || !channel ? "disabled" : ""}`}
-              disabled={!appId || !channel}
+              className={`join-channel ${!channel ? "disabled" : ""}`}
+              disabled={!channel}
               onClick={() => setCalling(true)}
             >
               <span>Join Channel</span>
@@ -95,13 +105,13 @@ export const Basics = () => {
           <div className="left-control">
             <button
               className="btn w-10 h-10 bg-blue-600"
-              onClick={() => setMic((a) => !a)}
+              onClick={() => setMic((prev) => !prev)}
             >
               <i className={`i-microphone ${!micOn ? "off" : ""}`} />
             </button>
             <button
               className="btn w-10 h-10 bg-white"
-              onClick={() => setCamera((a) => !a)}
+              onClick={() => setCamera((prev) => !prev)}
             >
               <i className={`i-camera ${!cameraOn ? "off" : ""}`} />
             </button>
@@ -110,7 +120,7 @@ export const Basics = () => {
             className={`btn btn-phone h-10 w-10 bg-red-600 ${
               calling ? "btn-phone-active" : ""
             }`}
-            onClick={() => setCalling((a) => !a)}
+            onClick={() => setCalling((prev) => !prev)}
           >
             {calling ? (
               <i className="i-phone-hangup" />
