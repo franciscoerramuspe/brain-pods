@@ -15,9 +15,14 @@ export const Basics: React.FC = () => {
         placeholder="Enter your code"
         value={podId}
         className="w-full p-2 rounded-md bg-gray-800 text-white"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && podId) {
+            router.push(`/pod/${podId}`);
+          }
+        }}
       />
       <button
-        className={`join-podId px-4 py-2 rounded-md bg-gray-800 text-white ${
+        className={`join-podId px-4 py-2 rounded-md hover:cursor-pointer bg-gray-800 text-white ${
           !podId ? "disabled" : ""
         }`}
         disabled={!podId}
@@ -25,7 +30,7 @@ export const Basics: React.FC = () => {
           router.push(`/pod/${podId}`);
         }}
       >
-        <span>Join Room</span>
+        <span>Join</span>
       </button>
     </div>
   );
