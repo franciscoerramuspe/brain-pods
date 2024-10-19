@@ -52,29 +52,19 @@ export default function Chat({ podId, user }: ChatProps) {
           event: 'INSERT',
           schema: 'public',
           table: 'chat_message',
-          filter: `"pod_id"=eq.${podId}`,
+          filter: `pod_id=eq.${podId}`,
         },
         (payload) => {
+          console.log('New message received:', payload.new);
           setMessages((prevMessages) => [...prevMessages, payload.new as ChatMessage]);
         }
       )
       .subscribe();
 
-    const checkSession = async () => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log('Current session:', sessionData?.session);
-      if (!sessionData?.session) {
-        console.error('User is not authenticated');
-        // Handle unauthenticated user (e.g., redirect to login page)
-      }
-    };
-
-    checkSession();
-
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [podId, user]);
+  }, [podId, user.id]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
