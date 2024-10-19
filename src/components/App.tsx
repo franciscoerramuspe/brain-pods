@@ -51,7 +51,7 @@ export const Basics = () => {
                 cameraOn={cameraOn}
                 micOn={micOn}
                 videoTrack={localCameraTrack}
-                cover="https://cdn-icons-png.flaticon.com/512/1082/1082810.png"
+                cover="https://static.vecteezy.com/system/resources/thumbnails/019/787/070/small_2x/no-photos-and-no-phones-forbidden-sign-on-transparent-background-free-png.png"
               >
                 <samp className="user-name">You</samp>
               </LocalUser>
@@ -59,7 +59,7 @@ export const Basics = () => {
             {remoteUsers.map((user) => (
               <div className="user w-60 h-60" key={user.uid}>
                 <RemoteUser
-                  cover="https://cdn-icons-png.flaticon.com/512/1082/1082810.png"
+                  cover="https://static.vecteezy.com/system/resources/thumbnails/019/787/070/small_2x/no-photos-and-no-phones-forbidden-sign-on-transparent-background-free-png.png"
                   user={user}
                 >
                   <samp className="user-name">{user.uid}</samp>
