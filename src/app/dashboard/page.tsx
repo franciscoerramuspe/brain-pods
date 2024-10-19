@@ -6,10 +6,12 @@ import { supabase } from "../../lib/supabase";
 import SearchBar from "../../components/SearchBar";
 import { User } from "@supabase/supabase-js";
 import Header from "../../components/Header";
+import { Basics } from "../../components/videocall/VideoCall";
+import { OvalRoomMenu } from "../../components/oval-room-menu";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,11 +39,35 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#323232]">
+    <div className="min-h-screen bg-[#323232] flex flex-col">
+      {/* Header */}
       <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
-      <main className="p-4">
+
+      {/* SearchBar justo debajo del header */}
+      <div className="p-4">
         <SearchBar />
-      </main>
+      </div>
+
+      {/* Contenido principal (puede crecer según el espacio disponible) */}
+      <main className="p-4 flex-grow flex items-center justify-center"></main>
+
+      {/* Menú de botones en un óvalo centrado */}
+      <footer className="relative">
+        <OvalRoomMenu />
+      </footer>
+      {isModalOpen ? (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md"
+          onClick={() => setIsModalOpen(false)} // Cierra el modal al hacer clic afuera
+        >
+          <div
+            className="rounded-md"
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro del modal cierre el overlay
+          >
+            <Basics />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

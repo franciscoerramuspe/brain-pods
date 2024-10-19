@@ -18,6 +18,7 @@ export default function NewPod() {
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
+  const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
 
   const tagsList = [
     { value: "react", label: "React" },
@@ -66,6 +67,10 @@ export default function NewPod() {
               isButtonHovered
                 ? "bg-gradient-to-r from-pink-600 to-purple-600 backdrop-blur-lg p-1"
                 : "bg-transparent"
+            } ${
+              isCancelHovered
+                ? "bg-gradient-to-r from-red-600 to-orange-600 backdrop-blur-lg p-1"
+                : "bg-transparent"
             }`}
           >
             <div className="bg-[#323232] p-5 rounded-[calc(0.60rem-0.25rem)] border border-[#4A4945]">
@@ -91,13 +96,23 @@ export default function NewPod() {
               <ContextProvider />
             </div>
           </div>
-          <Button
-            className="mt-4 mb-0"
-            onMouseOver={() => setIsButtonHovered(true)}
-            onMouseLeave={() => setIsButtonHovered(false)}
-          >
-            Create Pod
-          </Button>
+          <div className="flex flex-row gap-4">
+            <Button
+              className="mt-4 mb-0"
+              onMouseOver={() => setIsCancelHovered(true)}
+              onMouseLeave={() => setIsCancelHovered(false)}
+              onClick={() => router.push("/dashboard")}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="mt-4 mb-0"
+              onMouseOver={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+            >
+              Create Pod
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,63 +1,92 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { AiIcon, LightningIcon } from './Icons';
-
+import React, { useState, useRef, useEffect } from "react";
+import { AiIcon, LightningIcon } from "./Icons";
+import { motion } from "framer-motion";
 const SearchBar: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedOption, setSelectedOption] = useState("Pod Name");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const options = [
-    { value: 'Search By Pod Name', label: 'Pod Name', icon: <AiIcon className="w-6 h-6 mr-2" stroke="white" /> },
-    { value: 'Search By Tag', label: 'Tags', icon: <AiIcon className="w-6 h-6 mr-2" stroke="white" /> },
-    { value: 'Ask AI', label: 'Ask AI', icon: <AiIcon className="w-6 h-6 mr-2" stroke="white" /> },
+    {
+      value: "Search By Pod Name",
+      label: "Pod Name",
+      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
+    {
+      value: "Search By Tag",
+      label: "Tags",
+      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
+    {
+      value: "Ask AI",
+      label: "Ask AI",
+      icon: <AiIcon className="w-6 h-6 mr-2 " stroke="white" />, // Icon gets hover class
+    },
   ];
 
   return (
-    <div className="flex items-stretch bg-[#4A4A4A] rounded-2xl w-full max-w-2xl mx-auto relative h-14">
+    <div
+      className={`flex items-stretch bg-[#4A4A4A] rounded-2xl w-full max-w-2xl mx-auto relative h-14 transition-all duration-300 p-1 ${
+        isDropdownOpen
+          ? "ring-[1px] ring-pink-600 bg-gradient-to-r from-pink-600 to-purple-600 backdrop-blur-lg"
+          : "bg-transparent"
+      } focus-within:ring-[1px] focus-within:ring-pink-600 focus-within:bg-gradient-to-r focus-within:from-pink-600 focus-within:to-purple-600 focus-within:backdrop-blur-lg`}
+    >
       <div ref={dropdownRef} className="relative">
         <button
-          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-200 rounded-l-2xl h-full"
+          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A]  transition-colors duration-300 rounded-l-2xl h-full"
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         >
-          <AiIcon className="w-8 h-8" stroke="white" />
+          <AiIcon className="w-8 h-8 " stroke="white" /> {/* Icon with hover */}
         </button>
         {isDropdownOpen && (
-          <div className="absolute top-full left-0 mt-2 bg-[#3D3D3D] rounded-md shadow-lg z-50 w-48">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="absolute top-full left-0 mt-2 bg-[#3D3D3D] rounded-lg shadow-lg z-50 w-48"
+          >
             {options.map((option) => (
               <button
                 key={option.value}
-                className="w-full flex items-center px-4 py-3 text-sm text-white hover:bg-[#4A4A4A] transition-colors duration-200"
+                className="w-full flex items-center px-4 py-3 text-sm text-white hover:bg-[#4A4A4A] transition-all duration-300 rounded-lg"
                 onClick={() => {
-                  // Handle option selection here
                   setIsDropdownOpen(false);
+                  setSelectedOption(option.label);
                 }}
               >
                 {option.icon}
                 <span className="ml-2">{option.label}</span>
               </button>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
       <input
         type="text"
         placeholder="What do you want to brain at?"
-        className="bg-transparent text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg"
+        className="bg-[#323232] text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg "
       />
-      <button className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-200 rounded-r-2xl">
-        <LightningIcon className="w-8 h-8" stroke="white" />
+      <button className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl">
+        <LightningIcon className="w-8 h-8 " stroke="white" />{" "}
+        {/* Icon with hover */}
       </button>
     </div>
   );
