@@ -12,13 +12,11 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-
     const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        router.push('/dashboard');
-
+      if (event === "SIGNED_IN") {
+        router.push("/dashboard");
       }
-    );
+    });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
