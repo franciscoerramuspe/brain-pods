@@ -112,18 +112,18 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
                   cameraOn={cameraOn}
                   micOn={micOn}
                   videoTrack={localCameraTrack}
-                  cover="/path-to-placeholder-image.jpg"
+                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
                   className="w-full h-full"
                 />
               ) : user.uid !== "local" ? (
                 <RemoteUser
                   user={user as IAgoraRTCRemoteUser}
-                  cover="/path-to-placeholder-image.jpg"
+                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
                   className="w-full h-full"
                 />
               ) : (
                 <Image
-                  src="/path-to-placeholder-image.jpg"
+                  src="/images/placeholder.jpg"
                   alt="You"
                   className="w-full h-auto"
                   width={100}

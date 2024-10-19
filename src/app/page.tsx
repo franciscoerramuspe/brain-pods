@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabase";
 import GoogleButton from "../components/GoogleButton";
 import Logo from "../components/Logo";
+import { Basics } from "../components/videocall/VideoCall";
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -39,10 +41,26 @@ export default function Home() {
       </div>
       <div className="flex flex-col items-center space-y-3">
         <GoogleButton className="px-4 py-2 text-base w-64" />
-        <button className="px-4 py-2 text-sm text-gray-400 bg-gray-800 rounded-md hover:bg-gray-700 transition-colors duration-200 w-48">
+        <button
+          className="px-4 py-2 text-sm text-gray-400 bg-gray-800 rounded-md hover:bg-gray-700 transition-colors duration-200 w-48"
+          onClick={() => setIsModalOpen(true)}
+        >
           Have a code?
         </button>
       </div>
+      {isModalOpen ? (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setIsModalOpen(false)} // Cierra el modal al hacer clic afuera
+        >
+          <div
+            className="rounded-md"
+            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro del modal cierre el overlay
+          >
+            <Basics />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
