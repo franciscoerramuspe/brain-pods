@@ -9,7 +9,7 @@ import Header from "../../components/Header";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
