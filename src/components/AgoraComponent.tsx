@@ -11,7 +11,6 @@ const AgoraComponent = () => {
       );
       const App = (await import("./App")).default;
 
-      // Inicia el cliente de Agora
       const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
       const Component = () => (

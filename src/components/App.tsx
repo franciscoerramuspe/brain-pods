@@ -20,8 +20,24 @@ export const Basics = () => {
   useJoin({ appid: appId, channel: channel, token: null }, calling);
   const [micOn, setMic] = useState(true);
   const [cameraOn, setCamera] = useState(true);
-  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
-  const { localCameraTrack } = useLocalCameraTrack(cameraOn);
+  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn, {
+    encoderConfig: {
+      sampleRate: 48000,
+      sampleSize: 16,
+      stereo: true,
+      bitrate: 64,
+    },
+  });
+
+  const { localCameraTrack } = useLocalCameraTrack(cameraOn, {
+    encoderConfig: {
+      width: 1280,
+      height: 720,
+      bitrateMin: 1000,
+      bitrateMax: 1000,
+      frameRate: 15,
+    },
+  });
   usePublish([localMicrophoneTrack, localCameraTrack]);
   const remoteUsers = useRemoteUsers();
 
@@ -36,7 +52,7 @@ export const Basics = () => {
                 cameraOn={cameraOn}
                 micOn={micOn}
                 videoTrack={localCameraTrack}
-                cover="https://www.agora.io/en/wp-content/uploads/2022/10/3d-spatial-audio-icon.svg"
+                cover="https://cdn-icons-png.flaticon.com/512/1082/1082810.png"
               >
                 <samp className="user-name">You</samp>
               </LocalUser>
@@ -44,7 +60,7 @@ export const Basics = () => {
             {remoteUsers.map((user) => (
               <div className="user w-60 h-60" key={user.uid}>
                 <RemoteUser
-                  cover="https://www.agora.io/en/wp-content/uploads/2022/10/3d-spatial-audio-icon.svg"
+                  cover="https://cdn-icons-png.flaticon.com/512/1082/1082810.png"
                   user={user}
                 >
                   <samp className="user-name">{user.uid}</samp>
