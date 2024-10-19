@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { User } from '@supabase/supabase-js';
+import { User, RealtimeChannel } from '@supabase/supabase-js';
 
 interface ChatMessage {
   id: string;
   content: string;
   created_at: string;
   user_id: string;
+  user_name: string;
   pod_id: string;
   role: string;
   is_private: boolean;
@@ -20,13 +21,12 @@ interface ChatProps {
 export default function Chat({ podId, user }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
+  const subscriptionRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    console.log('Chat component mounted. podId:', podId, 'userId:', user.id);
-
     // Fetch initial messages
     const fetchMessages = async () => {
-      console.log('Fetching initial messages...');
       const { data, error } = await supabase
         .from('chat_message')
         .select('*')
@@ -36,14 +36,17 @@ export default function Chat({ podId, user }: ChatProps) {
       if (error) {
         console.error('Error fetching messages:', error);
       } else if (data) {
-        console.log('Initial messages fetched:', data);
         setMessages(data);
       }
     };
 
     fetchMessages();
 
-    // Subscribe to database changes
+    // Set up subscription for new messages
+    if (subscriptionRef.current) {
+      supabase.removeChannel(subscriptionRef.current);
+    }
+
     const channel = supabase
       .channel('public:chat_message')
       .on(
@@ -55,44 +58,88 @@ export default function Chat({ podId, user }: ChatProps) {
           filter: `pod_id=eq.${podId}`,
         },
         (payload) => {
-          console.log('New message received:', payload.new);
           setMessages((prevMessages) => [...prevMessages, payload.new as ChatMessage]);
         }
       )
       .subscribe();
 
+    subscriptionRef.current = channel;
+
+    // Cleanup
     return () => {
-      supabase.removeChannel(channel);
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+      }
     };
-  }, [podId, user.id]);
+  }, [podId]);
+
+  // Fetch user names when messages change
+  useEffect(() => {
+    // Create a set of known user IDs
+    const knownUserIds = new Set(Object.keys(userNames));
+
+    // Find new user IDs from messages that are not in userNames
+    const newUserIds = messages
+      .filter((m) => m.user_id !== user.id)
+      .map((m) => m.user_id)
+      .filter((id) => !knownUserIds.has(id));
+
+    const uniqueUserIds = Array.from(new Set(newUserIds));
+
+    if (uniqueUserIds.length === 0) return;
+
+    const fetchUserNames = async () => {
+        const uniqueUserIds = Array.from(
+          new Set(
+            messages
+              .filter((m) => m.user_id !== user.id && !userNames[m.user_id])
+              .map((m) => m.user_id)
+          )
+        );
+      
+        if (uniqueUserIds.length === 0) return;
+      
+        const { data, error } = await supabase
+          .from('raw_user_meta_data')
+          .select('user_id, name')
+          .in('user_id', uniqueUserIds);
+      
+        if (error) {
+          console.error('Error fetching user names:', error);
+        } else if (data) {
+          const newUserNames = Object.fromEntries(
+            data.map((profile) => [profile.user_id, profile.name || 'Anonymous'])
+          );
+          setUserNames((prev) => ({ ...prev, ...newUserNames }));
+        }
+      };
+      
+
+    fetchUserNames();
+  }, [messages, userNames]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() === '') return;
 
-    console.log('Attempting to send message:', newMessage);
-
     const messageData = {
       content: newMessage,
       pod_id: podId,
       user_id: user.id,
+      user_name: user.user_metadata.full_name || 'Anonymous',
       created_at: new Date().toISOString(),
       role: 'STUDENT',
       is_private: false,
     };
 
-    console.log('Message data to be inserted:', messageData);
-
     const { data, error } = await supabase.from('chat_message').insert([messageData]).select();
 
     if (error) {
       console.error('Error sending message:', error);
-      console.log('Error details:', error.details, 'Error hint:', error.hint);
       return;
     } else if (data && data.length > 0) {
-      console.log('Message sent successfully:', data[0]);
       setNewMessage('');
-      setMessages(prevMessages => [...prevMessages, data[0]]);
+      // Messages will update via the subscription
     } else {
       console.warn('No error occurred, but no data was returned');
     }
@@ -104,7 +151,9 @@ export default function Chat({ podId, user }: ChatProps) {
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.user_id === user.id ? 'justify-end' : 'justify-start'}`}
+            className={`flex ${
+              message.user_id === user.id ? 'justify-end' : 'justify-start'
+            }`}
           >
             <div
               className={`w-[70%] p-2 rounded-lg ${
@@ -112,7 +161,7 @@ export default function Chat({ podId, user }: ChatProps) {
               }`}
             >
               <div className="text-xs mb-1">
-                {message.user_id === user.id ? 'You' : user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous'}
+                {message.user_id === user.id ? 'You' : message.user_name}
               </div>
               <p className="text-sm break-words">{message.content}</p>
             </div>
