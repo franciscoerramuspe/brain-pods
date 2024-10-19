@@ -12,6 +12,7 @@ import {
   useLocalCameraTrack,
   usePublish,
   useRemoteUsers,
+  IAgoraRTCRemoteUser,
 } from "agora-rtc-react";
 import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon } from "../Icons";
 
@@ -43,8 +44,8 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
 
   const { localCameraTrack } = useLocalCameraTrack(true, {
     encoderConfig: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
       bitrateMin: 1000,
       bitrateMax: 1000,
       frameRate: 15,
@@ -116,7 +117,7 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
                 />
               ) : user.uid !== "local" ? (
                 <RemoteUser
-                  user={user}
+                  user={user as IAgoraRTCRemoteUser}
                   cover="/path-to-placeholder-image.jpg"
                   className="w-full h-full"
                 />
@@ -163,13 +164,21 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
             onClick={() => setMic((prev) => !prev)}
             className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors"
           >
-            <MicrophoneIcon className="w-6 h-6 text-white" />
+            {micOn ? (
+              <MicrophoneIcon className="w-6 h-6 text-white" />
+            ) : (
+              <MicrophoneIcon className="w-6 h-6 text-red-500" />
+            )}
           </button>
           <button
             onClick={() => setCamera((prev) => !prev)}
             className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors"
           >
-            <VideoIcon className="w-6 h-6 text-white" />
+            {cameraOn ? (
+              <VideoIcon className="w-6 h-6 text-white" />
+            ) : (
+              <VideoIcon className="w-6 h-6 text-red-600" />
+            )}
           </button>
           <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
             <ChatIcon className="w-6 h-6 text-white" />

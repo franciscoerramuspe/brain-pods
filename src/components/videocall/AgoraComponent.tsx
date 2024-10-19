@@ -9,7 +9,7 @@ const AgoraComponent = ({ appId }: { appId: string }) => {
       const { default: AgoraRTC, AgoraRTCProvider } = await import(
         "agora-rtc-react"
       );
-      const Pod = (await import("./pod")).default;
+      const Pod = (await import("./Pod")).default;
 
       const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
