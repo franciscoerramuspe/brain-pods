@@ -93,6 +93,33 @@ export default function Pod({ podId }: { podId: string }) {
     };
   }, [podId, router]);
 
+  useEffect(() => {
+    const socket = new WebSocket('ws://your-websocket-server-url');
+
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+      // You can send an initial message here if needed
+      // socket.send('Hello from the pod page!');
+    };
+
+    socket.onmessage = (event) => {
+      console.log('Received message from server:', event.data);
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      socket.close();
+    };
+  }, []);
+
   if (!user) {
     return <div>Loading...</div>;
   }
