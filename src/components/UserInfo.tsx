@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import Image from 'next/image';
-import { supabase } from '../lib/supabase';
-import { LogoutIcon } from './Icons';
+import React, { useState, useRef, useEffect } from "react";
+import { User } from "@supabase/supabase-js";
+import Image from "next/image";
+import { supabase } from "../lib/supabase";
+//import { LogoutIcon } from './Icons';
 
 interface UserInfoProps {
   user: User;
@@ -14,25 +14,28 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const getFirstName = () => {
     if (user.user_metadata?.full_name) {
-      return user.user_metadata.full_name.split(' ')[0];
+      return user.user_metadata.full_name.split(" ")[0];
     }
     if (user.email) {
-      return user.email.split('@')[0];
+      return user.email.split("@")[0];
     }
-    return 'User';
+    return "User";
   };
 
   const firstName = getFirstName();
@@ -44,13 +47,19 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
 
   return (
     <div ref={dropdownRef} className="relative">
-      <div 
+      <div
         className="flex items-center bg-[#D9D9D9] rounded-lg p-2 cursor-pointer"
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
         <span className="text-black font-semibold mr-2">{firstName}</span>
         {avatarUrl ? (
-          <Image src={avatarUrl} alt={firstName} width={32} height={32} className="rounded-full" />
+          <Image
+            src={avatarUrl}
+            alt={firstName}
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
         ) : (
           <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
             {firstName[0].toUpperCase()}
@@ -63,7 +72,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
             className="w-full flex items-center px-4 py-3 text-sm text-black hover:bg-[#C0C0C0] transition-colors duration-200 rounded-lg"
             onClick={handleLogout}
           >
-            <LogoutIcon className="w-5 h-5 mr-2" />
+            {/* <LogoutIcon className="w-5 h-5 mr-2" /> */}
             <span>Logout</span>
           </button>
         </div>
