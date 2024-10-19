@@ -21,12 +21,12 @@ export default function HistoryPage() {
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
-      console.log('User data:', data);  // Add this line
+      console.log('User data:', data);
       if (data.user) {
         setUser(data.user);
         fetchPodSessions();
       } else {
-        console.log('No user found, redirecting to home');  // Add this line
+        console.log('No user found, redirecting to home');
         router.push('/');
       }
     };
@@ -35,6 +35,7 @@ export default function HistoryPage() {
 
   const fetchPodSessions = async () => {
     try {
+      console.log('Fetching pod sessions...');
       const response = await fetch('/api/pods/history', {
         credentials: 'include',
       });
