@@ -17,7 +17,7 @@ export default function Header({ user, textIsDisplayed, userIsDisplayed }: Heade
           <h1 className="text-4xl font-bold text-white font-adversecase">Brain Pods</h1>
         )}
       </div>
-      {userIsDisplayed && <UserInfo user={user} />}
+      {userIsDisplayed && user && <UserInfo user={user} />}
     </header>
   );
 }
