@@ -15,6 +15,17 @@ import {
   IAgoraRTCRemoteUser,
 } from "agora-rtc-react";
 import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon } from "../Icons";
+import { createClient } from "@supabase/supabase-js";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import * as SheetPrimitive from "@radix-ui/react-dialog";
+import Chat from "../Chat";
+import { User } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   const router = useRouter();
@@ -25,6 +36,7 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   const [micOn, setMic] = useState<boolean>(true);
   const [cameraOn, setCamera] = useState<boolean>(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [user, setUser] = useState<User | null>(null);
 
   const usersPerPage = 6;
 
@@ -56,6 +68,18 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   const remoteUsers = useRemoteUsers();
 
   useEffect(() => {
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setUser(data.user);
+      } else {
+        router.push("/");
+      }
+    };
+    getUser();
+  }, [router]);
+
+  useEffect(() => {
     if (localMicrophoneTrack) {
       localMicrophoneTrack.setEnabled(micOn);
     }
@@ -73,8 +97,35 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
     }
   }, [podId]);
 
+  useEffect(() => {
+    const socket = new WebSocket('ws://your-websocket-server-url');
+
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+      // You can send an initial message here if needed
+      // socket.send('Hello from the pod page!');
+    };
+
+    socket.onmessage = (event) => {
+      console.log('Received message from server:', event.data);
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      socket.close();
+    };
+  }, []);
+
   if (!podId) {
-    return <div>Loading...</div>; // or a spinner
+    return <div>Loading...</div>;
   }
 
   const allUsers = [
@@ -180,9 +231,21 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
               <VideoIcon className="w-6 h-6 text-red-600" />
             )}
           </button>
-          <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
-            <ChatIcon className="w-6 h-6 text-white" />
-          </button>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
+                <ChatIcon className="w-6 h-6 text-white" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[400px] p-0">
+              <SheetPrimitive.Title className="sr-only">
+                Chat
+              </SheetPrimitive.Title>
+              <Chat podId={podId} user={user!} />
+            </SheetContent>
+          </Sheet>
+
           <button
             onClick={() => {
               setCalling(false);

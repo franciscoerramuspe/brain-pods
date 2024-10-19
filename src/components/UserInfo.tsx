@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import { supabase } from "../lib/supabase";
-//import { LogoutIcon } from './Icons';
+import { LogoutIcon } from "./Icons";
 
 interface UserInfoProps {
   user: User;
@@ -72,7 +72,7 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
             className="w-full flex items-center px-4 py-3 text-sm text-black hover:bg-[#C0C0C0] transition-colors duration-200 rounded-lg"
             onClick={handleLogout}
           >
-            {/* <LogoutIcon className="w-5 h-5 mr-2" /> */}
+            <LogoutIcon className="w-5 h-5 mr-2" />
             <span>Logout</span>
           </button>
         </div>
