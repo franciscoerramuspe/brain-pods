@@ -80,11 +80,6 @@ export const Basics = () => {
               placeholder="<Your channel Name>"
               value={channel}
             />
-            <input
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="<Your token>"
-              value={token}
-            />
 
             <button
               className={`join-channel ${!appId || !channel ? "disabled" : ""}`}
