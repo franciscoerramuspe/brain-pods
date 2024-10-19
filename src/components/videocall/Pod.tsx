@@ -97,6 +97,33 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
     }
   }, [podId]);
 
+  useEffect(() => {
+    const socket = new WebSocket('ws://your-websocket-server-url');
+
+    socket.onopen = () => {
+      console.log('WebSocket connection established');
+      // You can send an initial message here if needed
+      // socket.send('Hello from the pod page!');
+    };
+
+    socket.onmessage = (event) => {
+      console.log('Received message from server:', event.data);
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    // Clean up the WebSocket connection when the component unmounts
+    return () => {
+      socket.close();
+    };
+  }, []);
+
   if (!podId) {
     return <div>Loading...</div>;
   }
@@ -215,7 +242,7 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
               <SheetPrimitive.Title className="sr-only">
                 Chat
               </SheetPrimitive.Title>
-              <Chat podId={podId || ""} user={user} />
+              <Chat podId={podId} user={user!} />
             </SheetContent>
           </Sheet>
 
