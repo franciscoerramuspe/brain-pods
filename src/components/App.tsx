@@ -15,7 +15,6 @@ export const Basics = () => {
   const isConnected = useIsConnected();
   const [appId, setAppId] = useState("");
   const [channel, setChannel] = useState("");
-  const [token, setToken] = useState("");
 
   useJoin({ appid: appId, channel: channel, token: null }, calling);
   const [micOn, setMic] = useState(true);
