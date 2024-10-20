@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
-import SearchBar from "../../components/SearchBar";
+import SearchBar from "../../components/searchbar/SearchBar";
 import { User } from "@supabase/supabase-js";
 import Header from "../../components/Header";
+import { OvalRoomMenu } from "../../components/oval-room-menu";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -36,12 +36,35 @@ export default function Dashboard() {
     return <div>Loading...</div>;
   }
 
+  const navigateToHistory = () => {
+    router.push(`/history/${user.id}`);
+  };
+
   return (
-    <div className="min-h-screen bg-[#323232]">
+    <div className="min-h-screen bg-[#323232] flex flex-col">
+      {/* Header */}
       <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
-      <main className="p-4">
+
+      {/* SearchBar justo debajo del header */}
+      <div className="p-4">
         <SearchBar />
-      </main>
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={navigateToHistory}
+            className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors"
+          >
+            View History
+          </button>
+        </div>
+      </div>
+
+      {/* Contenido principal (puede crecer según el espacio disponible) */}
+      <main className="p-4 flex-grow flex items-center justify-center"></main>
+
+      {/* Menú de botones en un óvalo centrado */}
+      <footer className="relative">
+        <OvalRoomMenu />
+      </footer>
     </div>
   );
 }
