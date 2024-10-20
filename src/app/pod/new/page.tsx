@@ -19,15 +19,12 @@ export default function NewPod() {
   const [podTags, setPodTags] = useState<string[]>([]);
   const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
+  const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
+  const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
+    []
+  ); // State for tags
 
-  const tagsList = [
-    { value: "MATH", label: "MATH" },
-    { value: "CHEMISTRY", label: "CHEMISTRY" },
-    { value: "vue", label: "Vue" },
-    { value: "svelte", label: "Svelte" },
-    { value: "ember", label: "Ember" },
-  ];
-
+  // Fetching user session
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -48,42 +45,74 @@ export default function NewPod() {
     };
   }, [router]);
 
+  // Fetch tags from supabase
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pod_tag")
+          .select("id, tag");
+
+        if (error) throw error;
+
+        const formattedTags = data.map((tag) => ({
+          value: tag.id,
+          label: tag.tag
+            ? tag.tag
+                .toLowerCase()
+                .replace(/\b\w/g, (c: string) => c.toUpperCase())
+            : "",
+        }));
+        console.log(data);
+        setTagsList(formattedTags);
+      } catch (error) {
+        console.error("Error fetching tags: ", error);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
   const createPod = async () => {
     if (!user || !podName || podTags.length === 0) return;
 
     setIsCreatingPod(true);
 
     try {
-      const { data: podData, error: podError } = await supabase.from("pod").insert({
-        owner_id: user?.id,
-        name: podName,
+      const { data: podData, error: podError } = await supabase
+        .from("pod")
+        .insert({
+          owner_id: user?.id,
+          name: podName,
         is_active: true,
-        is_premium: false,
-        is_public: true,
-      })
-      .select()
-      .single();
+          is_premium: false,
+          is_public: true,
+        })
+        .select()
+        .single();
 
-    if (podError) throw podError;
+      if (podError) throw podError;
 
-    // Insert pod topics
-    if (podTags.length > 0) {
-      const { error: topicError } = await supabase.from("pod_topic").insert(podTags.map(tag => ({
-        pod_id: podData.id,
-        topic_name: tag,
-      })));
+      // Insert pod topics
+      if (podTags.length > 0) {
+        const { error: topicError } = await supabase.from("pod_topic").insert(
+          podTags.map((tag) => ({
+            pod_id: podData.id,
+            topic_name: tag,
+          }))
+        );
 
-      if (topicError) throw topicError;
+        if (topicError) throw topicError;
+      }
+
+      // Redirect to the new pod
+      router.push(`/pod/${podData.id}`);
+    } catch (error) {
+      console.error("Error creating pod: ", error);
+    } finally {
+      setIsCreatingPod(false);
     }
-
-    // Redirect to the new pod
-    router.push(`/pod/${podData.id}`);
-  } catch (error) {
-    console.error('Error creating pod: ', error);
-  } finally {
-    setIsCreatingPod(false);
-  }
-};
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -104,6 +133,10 @@ export default function NewPod() {
               isButtonHovered
                 ? "bg-gradient-to-r from-pink-600 to-purple-600 backdrop-blur-lg p-1"
                 : "bg-transparent"
+            } ${
+              isCancelHovered
+                ? "bg-gradient-to-r from-red-600 to-orange-600 backdrop-blur-lg p-1"
+                : "bg-transparent"
             }`}
           >
             <div className="bg-[#323232] p-5 rounded-[calc(0.60rem-0.25rem)] border border-[#4A4945]">
@@ -118,7 +151,7 @@ export default function NewPod() {
                   }
                 />
                 <MultiSelect
-                  options={tagsList}
+                  options={tagsList} // Now using the state for tagsList
                   onValueChange={setPodTags}
                   defaultValue={podTags}
                   placeholder="Select Tags"
@@ -129,15 +162,27 @@ export default function NewPod() {
               <ContextProvider />
             </div>
           </div>
-          <Button
-            className="mt-4"
+          <div className="flex flex-row gap-4">
+            <Button
+              className="mt-4 mb-0"
+              onMouseOver={() => setIsCancelHovered(true)}
+              onMouseLeave={() => setIsCancelHovered(false)}
+              onClick={() => router.push("/dashboard")}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="mt-4"
             onClick={createPod}
             disabled={!podName || isCreatingPod}
-            onMouseOver={() => setIsButtonHovered(true)}
-            onMouseLeave={() => setIsButtonHovered(false)}
-          >
-            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
-          </Button>
+              onMouseOver={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+              onClick={createPod}
+              disabled={isCreatingPod} // Disable button during pod creation
+            >
+            {isCreatingPod ? "Creating Pod..." : "  {isCreatingPod ? "Creating Pod..." : "Create Pod"}"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

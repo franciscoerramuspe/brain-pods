@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${adversecase.variable} ${adversecaseRegular.variable} ${geistSans.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${adversecase.variable} ${adversecaseRegular.variable} ${geistSans.variable} font-sans antialiased bg-[#323232] text-foreground`}
       >
         <ThemeProvider
           attribute="class"
