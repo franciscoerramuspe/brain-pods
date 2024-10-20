@@ -55,6 +55,7 @@ export default function NewPod() {
     try {
       const { data: podData, error: podError } = await supabase.from("pod").insert({
         owner_id: user?.id,
+        name: podName,
         is_active: true,
         is_premium: false,
         is_public: true,

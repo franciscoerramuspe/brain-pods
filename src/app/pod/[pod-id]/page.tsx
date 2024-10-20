@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Snackbar } from "@/components/ui/snackbar";
-import { joinPodSession, checkPodStatus, leavePodSession } from "@/lib/podOperations";
+import { joinPodSession, checkPodStatus, leavePodSession, updatePodStatus } from "@/lib/podOperations";
 
 const appId = process.env.NEXT_PUBLIC_AGORA_API_KEY;
 
@@ -28,70 +28,64 @@ const PodPage = () => {
   const [podExists, setPodExists] = useState<boolean | null>(null);
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const leavePod = useCallback(async () => {
-    try {
-      const user = await supabase.auth.getUser();
-      if (user.data.user) {
-        await leavePodSession(user.data.user.id, podId);
-      }
-    } catch (error) {
-      console.error('Error leaving pod:', error);
-    }
-  }, [podId]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    let userSession: string | null = null;
+
     const checkAndJoinPod = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          throw new Error("User not authenticated");
+        }
+        setUserId(user.id);
+        userSession = user.id;
+
         const { isActive, hasEnded } = await checkPodStatus(podId);
-       
+        
         if (!isActive || hasEnded) {
           setPodExists(false);
           setSnackbarMessage("This pod session has ended or is inactive.");
           setIsSnackbarOpen(true);
-          setTimeout(() => router.push('/pod/new'), 1000);
+          setTimeout(() => router.push('/pod/new'), 3000);
           return;
         }
- 
- 
-        const user = await supabase.auth.getUser();
-        if (!user.data.user) {
-          throw new Error("User not authenticated");
-        }
- 
- 
-        await joinPodSession(user.data.user.id, podId);
+
+        await joinPodSession(user.id, podId);
         setPodExists(true);
       } catch (error) {
         console.error('Error joining pod:', error);
         setPodExists(false);
         setSnackbarMessage("Error joining pod");
         setIsSnackbarOpen(true);
-        setTimeout(() => router.push('/pod/new'), 1000);
+        setTimeout(() => router.push('/pod/new'), 3000);
       }
     };
- 
 
     checkAndJoinPod();
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-      await leavePod();
-    };
-
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'hidden') {
-        await leavePod();
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      leavePod();
+      if (userSession && podId) {
+        leavePodSession(userSession, podId)
+          .then((result) => {
+            if (result) {
+              console.log("Left pod session successfully");
+              return updatePodStatus(podId);
+            } else {
+              console.log("Failed to leave pod session or session was already closed");
+              return updatePodStatus(podId);
+            }
+          })
+          .then(updatedPod => {
+            if (updatedPod) {
+              console.log("Pod status updated: ", updatedPod);
+            } else {
+              console.log("Pod status not updated, there might still be active users");
+            }
+          })
+          .catch(error => console.error('Error leaving pod:', error));
+      }
     };
   }, [podId, router]);
 
