@@ -2,43 +2,41 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Chat from '../Chat';
+import Chat from "../Chat";
 import Header from "../Header";
 import {
-s  LocalUser,
-  RemoteUser,
-  useJoin,
-  useLocalMicrophoneTrack,
-  useLocalCameraTrack,
-  usePublish,
-  useRemoteUsers,
-  IAgoraRTCRemoteUser,
-} from "agora-rtc-react";
-import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon, BrainIcon, PlayIcon } from "../Icons";
-import { createClient, User } from "@supabase/supabase-js";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "../ui/button";
+  MicrophoneIcon,
+  VideoIcon,
+  ChatIcon,
+  PhoneIcon,
+  BrainIcon,
+  PlayIcon,
+} from "../Icons";
 import { supabase } from "../../lib/supabase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
-import Chat from "../Chat";
+import InteractiveCard from "../InteractiveCard";
+import { startSession } from "../../app/api/session/route";
+import { SocketMessage, CardMessage } from "../../interfaces/types";
+import { Button } from "../ui/button";
 import { User } from "@supabase/supabase-js";
-import InteractiveCard from "./InteractiveCard";
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const participants = [
+  { name: "Brock Davis", image: "/path-to-brock-image.jpg" },
+  { name: "Jada Grimes", image: "/path-to-jada-image.jpg" },
+  { name: "Antwan Cannon", image: "/path-to-antwan-image.jpg" },
+  { name: "Macy Halloway", image: "/path-to-macy-image.jpg" },
+];
 
 export default function Pod({ podId }: { podId: string }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [wsStatus, setWsStatus] = useState<string>("Not connected");
   const [isHovered, setIsHovered] = useState(false);
-  const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(null);
+  const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(
+    null
+  );
   const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
-  const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -57,7 +55,6 @@ export default function Pod({ podId }: { podId: string }) {
     const connectWebSocket = () => {
       ws = new WebSocket(
         `wss://brain-pods-cloud-508208716471.us-central1.run.app/?podId=${podId}`
-        // `http://localhost:8081/?podId=${podId}`
       );
 
       ws.onopen = () => {
@@ -105,35 +102,44 @@ export default function Pod({ podId }: { podId: string }) {
   return (
     <div className="bg-[#323232] min-h-screen flex">
       <div className="flex-grow">
-        <Header user={null} textIsDisplayed={false} userIsDisplayed={false} />
+        <Header
+          user={null}
+          textIsDisplayed={false}
+          userIsDisplayed={false}
+        />
         <InteractiveCard
           message={socketMessage?.data as CardMessage}
           isOpen={isInteractiveCardOpen}
         />
-        <div className="flex justify-center mt-6 mb-8">
-          <Button
-            onClick={() => startSession({ podId })}
-            disabled={wsStatus === "Disconnected"}
-            className="bg-[#46178f] hover:bg-[#5a1cb3] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors duration-300 ease-in-out flex items-center justify-center overflow-hidden group"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            <div className="flex items-center space-x-2 transition-transform duration-300 ease-in-out group-hover:scale-110 origin-center">
-              <span className="text-base">Start Session</span>
-              <span>
-                {isHovered ? (
-                  <BrainIcon className="w-5 h-5" />
-                ) : (
-                  <PlayIcon className="w-5 h-5" />
-                )}
-              </span>
-            </div>
-          </Button>
-        </div>
+<div className="flex justify-center mt-6 mb-8">
+  <Button
+    onClick={() => startSession({ podId })}
+    disabled={wsStatus === "Disconnected"}
+    className="bg-[#46178f] hover:bg-[#5a1cb3] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2 group"
+    onMouseEnter={() => setIsHovered(true)}
+    onMouseLeave={() => setIsHovered(false)}
+  >
+    <span className="transition-transform duration-300 ease-in-out transform group-hover:-translate-x-2">
+      Start Session
+    </span>
+    <span className="transition-transform duration-300 ease-in-out transform group-hover:-translate-x-2">
+      {isHovered ? (
+        <BrainIcon className="w-5 h-5" />
+      ) : (
+        <PlayIcon className="w-5 h-5" />
+      )}
+    </span>
+  </Button>
+</div>
+
+
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
             {participants.map((participant, index) => (
-              <div key={index} className="relative rounded-lg overflow-hidden">
+              <div
+                key={index}
+                className="relative rounded-lg overflow-hidden"
+              >
                 <img
                   src={participant.image}
                   alt={participant.name}
@@ -155,7 +161,6 @@ export default function Pod({ podId }: { podId: string }) {
             <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
               <VideoIcon className="w-6 h-6 text-white" />
             </button>
-
             <Sheet>
               <SheetTrigger asChild>
                 <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
@@ -169,13 +174,10 @@ export default function Pod({ podId }: { podId: string }) {
                 <Chat podId={podId} user={user} />
               </SheetContent>
             </Sheet>
-
             <button className="p-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors">
               <PhoneIcon className="w-6 h-6 text-white" />
             </button>
           </div>
-
-          {/* WebSocket status display */}
           <div className="fixed top-6 right-6 bg-[#4A4A4A] text-white p-2 rounded">
             WebSocket Status: {wsStatus}
           </div>
