@@ -143,26 +143,26 @@ export default function NewPod() {
       }
 
       // Upload embeddings
-      let finalContext = "";
+      // let finalContext = "";
 
-      const processContextList = async () => {
-        for (const item of contextList) {
-          if (item[0] instanceof File) {
-            const fileContent = await new Promise<string>((resolve) => {
-              const fileReader = new FileReader();
-              fileReader.onload = (event) => {
-                resolve(event.target?.result as string);
-              };
-              fileReader.readAsText(item[0] as File);
-            });
-            finalContext += fileContent + "\n";
-          } else {
-            finalContext += (item[0] as TextContext).text + "\n";
-          }
-        }
-      };
+      // const processContextList = async () => {
+      //   for (const item of contextList) {
+      //     if (item[0] instanceof File) {
+      //       const fileContent = await new Promise<string>((resolve) => {
+      //         const fileReader = new FileReader();
+      //         fileReader.onload = (event) => {
+      //           resolve(event.target?.result as string);
+      //         };
+      //         fileReader.readAsText(item[0] as File);
+      //       });
+      //       finalContext += fileContent + "\n";
+      //     } else {
+      //       finalContext += (item[0] as TextContext).text + "\n";
+      //     }
+      //   }
+      // };
 
-      await processContextList();
+      // await processContextList();
 
       await uploadEmbeddings({
         podId: podData.id,
