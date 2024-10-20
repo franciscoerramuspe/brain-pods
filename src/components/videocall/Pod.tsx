@@ -15,11 +15,10 @@ import {
   IAgoraRTCRemoteUser,
 } from "agora-rtc-react";
 import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon } from "../Icons";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import Chat from "../Chat";
-import { User } from "@supabase/supabase-js";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -98,24 +97,24 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   }, [podId]);
 
   useEffect(() => {
-    const socket = new WebSocket('ws://your-websocket-server-url');
+    const socket = new WebSocket("ws://your-websocket-server-url");
 
     socket.onopen = () => {
-      console.log('WebSocket connection established');
+      console.log("WebSocket connection established");
       // You can send an initial message here if needed
       // socket.send('Hello from the pod page!');
     };
 
     socket.onmessage = (event) => {
-      console.log('Received message from server:', event.data);
+      console.log("Received message from server:", event.data);
     };
 
     socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error("WebSocket error:", error);
     };
 
     socket.onclose = () => {
-      console.log('WebSocket connection closed');
+      console.log("WebSocket connection closed");
     };
 
     // Clean up the WebSocket connection when the component unmounts

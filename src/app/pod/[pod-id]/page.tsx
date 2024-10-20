@@ -1,33 +1,43 @@
-'use client';
+"use client";
 
-import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import Chat from '../../../components/Chat';
-import Header from '../../../components/Header';
+import { useRouter, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import Chat from "../../../components/Chat";
+import Header from "../../../components/Header";
 import {
   MicrophoneIcon,
   VideoIcon,
   ChatIcon,
   PhoneIcon,
-} from '../../../components/Icons';
-import { supabase } from '../../../lib/supabase';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import * as SheetPrimitive from "@radix-ui/react-dialog"
-import { User } from '@supabase/supabase-js';
-
+} from "../../../components/Icons";
+import { supabase } from "../../../lib/supabase";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import * as SheetPrimitive from "@radix-ui/react-dialog";
+import { User } from "@supabase/supabase-js";
+import InteractiveCard from "@/components/InteractiveCard";
+import { startSession } from "@/app/api/session/route";
+import { SocketMessage, CardMessage } from "@/interfaces/types";
 const participants = [
-  { name: 'Brock Davis', image: '/path-to-brock-image.jpg' },
-  { name: 'Jada Grimes', image: '/path-to-jada-image.jpg' },
-  { name: 'Antwan Cannon', image: '/path-to-antwan-image.jpg' },
-  { name: 'Macy Halloway', image: '/path-to-macy-image.jpg' },
+  { name: "Brock Davis", image: "/path-to-brock-image.jpg" },
+  { name: "Jada Grimes", image: "/path-to-jada-image.jpg" },
+  { name: "Antwan Cannon", image: "/path-to-antwan-image.jpg" },
+  { name: "Macy Halloway", image: "/path-to-macy-image.jpg" },
 ];
 
 export default function PodMeeting() {
   const router = useRouter();
   const params = useParams();
-  const podId = Array.isArray(params['pod-id']) ? params['pod-id'][0] : params['pod-id'];
+  const podId = Array.isArray(params["pod-id"])
+    ? params["pod-id"][0]
+    : params["pod-id"];
   const [user, setUser] = useState<User | null>(null);
-  const [wsStatus, setWsStatus] = useState<string>('Not connected');
+  const [wsStatus, setWsStatus] = useState<string>("Not connected");
+
+  const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(
+    null
+  );
+
+  const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -35,33 +45,46 @@ export default function PodMeeting() {
       if (data.user) {
         setUser(data.user);
       } else {
-        router.push('/');
+        router.push("/");
       }
     };
+
     getUser();
 
     let ws: WebSocket;
 
     const connectWebSocket = () => {
-      ws = new WebSocket(`wss://brain-pods-cloud-508208716471.us-central1.run.app:3100/${podId}`);
+      ws = new WebSocket(
+        `wss://brain-pods-cloud-508208716471.us-central1.run.app/?podId=${podId}`
+        // `http://localhost:8081/?podId=${podId}`
+      );
 
       ws.onopen = () => {
-        setWsStatus('Connected');
-        console.log('WebSocket connected');
+        setWsStatus("Connected");
+        console.log("WebSocket connected");
       };
 
       ws.onmessage = (event) => {
-        console.log('Received:', event.data);
+        console.log("Received:", event.data);
+        const message: SocketMessage = JSON.parse(event.data);
+        if (message.type === "open") {
+          setSocketMessage(message);
+          setIsInteractiveCardOpen(true);
+        } else if (message.type === "close") {
+          setIsInteractiveCardOpen(false);
+        } else if (message.type === "chat") {
+          setSocketMessage(message);
+        }
       };
 
       ws.onerror = (error) => {
-        setWsStatus('Error connecting');
-        console.error('WebSocket error:', error);
+        setWsStatus("Error connecting");
+        console.error("WebSocket error:", error);
       };
 
       ws.onclose = () => {
-        setWsStatus('Disconnected');
-        console.log('WebSocket disconnected');
+        setWsStatus("Disconnected");
+        console.log("WebSocket disconnected");
       };
     };
 
@@ -82,11 +105,25 @@ export default function PodMeeting() {
     <div className="bg-[#323232] min-h-screen flex">
       <div className="flex-grow">
         <Header user={null} textIsDisplayed={false} userIsDisplayed={false} />
+        <InteractiveCard
+          message={socketMessage?.data as CardMessage}
+          isOpen={isInteractiveCardOpen}
+        />
+        <button
+          onClick={() => startSession({ podId })}
+          disabled={wsStatus == "Disconnected"}
+        >
+          Start Session
+        </button>
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
             {participants.map((participant, index) => (
               <div key={index} className="relative rounded-lg overflow-hidden">
-                <img src={participant.image} alt={participant.name} className="w-full h-auto" />
+                <img
+                  src={participant.image}
+                  alt={participant.name}
+                  className="w-full h-auto"
+                />
                 <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-white text-sm">
                   {participant.name}
                 </div>
@@ -111,8 +148,10 @@ export default function PodMeeting() {
                 </button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[400px] p-0">
-                <SheetPrimitive.Title className="sr-only">Chat</SheetPrimitive.Title>
-                <Chat podId={podId || ''} user={user} />
+                <SheetPrimitive.Title className="sr-only">
+                  Chat
+                </SheetPrimitive.Title>
+                <Chat podId={podId || ""} user={user} />
               </SheetContent>
             </Sheet>
 
