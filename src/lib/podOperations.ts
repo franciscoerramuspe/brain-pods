@@ -68,13 +68,19 @@ export async function joinPodSession(userId: string, podId: string) {
       .eq('id', podId)
       .maybeSingle();
   
-    if (error) throw error;
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return { exists: false, isActive: false, hasEnded: false };
+      }
+      throw error;
+    }
   
     return {
+      exists: true,
       isActive: data!.is_active,
       hasEnded: !!data!.ended_at
     };
-  }
+  }3
 
   export async function updatePodStatus(podId: string) {
     // Check if there are any active users in the pod

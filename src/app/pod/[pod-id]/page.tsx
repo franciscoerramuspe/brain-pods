@@ -49,15 +49,23 @@ const PodPage = () => {
         setUserId(user.id);
         userSession = user.id;
 
-        // const { isActive, hasEnded } = await checkPodStatus(podId);
+        const { exists, isActive, hasEnded } = await checkPodStatus(podId);
 
-        // if (!isActive || hasEnded) {
-        //   setPodExists(false);
-        //   setSnackbarMessage("This pod session has ended or is inactive.");
-        //   setIsSnackbarOpen(true);
-        //   setTimeout(() => router.push('/pod/new'), 1000);
-        //   return;
-        // }
+        if (!exists) {
+          setPodExists(false);
+          setSnackbarMessage("This pod does not exist.");
+          setIsSnackbarOpen(true);
+          setTimeout(() => router.push('/dashboard'), 3000);
+          return;
+        }
+
+        if (!isActive || hasEnded) {
+          setPodExists(false);
+          setSnackbarMessage("This pod session has ended or is inactive.");
+          setIsSnackbarOpen(true);
+          setTimeout(() => router.push('/dashboard'), 3000);
+          return;
+        }
 
         await joinPodSession(user.id, podId);
         setPodExists(true);
@@ -66,7 +74,7 @@ const PodPage = () => {
         setPodExists(false);
         setSnackbarMessage("Error joining pod");
         setIsSnackbarOpen(true);
-        setTimeout(() => router.push("/pod/new"), 1000);
+        setTimeout(() => router.push("/dashboard"), 1000);
       }
     };
 
