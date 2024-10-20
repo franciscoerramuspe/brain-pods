@@ -19,6 +19,7 @@ import { createClient, User } from "@supabase/supabase-js";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import Chat from "../Chat";
+import one from "../../public/images/1.jpg";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -162,23 +163,27 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
                   cameraOn={cameraOn}
                   micOn={micOn}
                   videoTrack={localCameraTrack}
-                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
+                  cover="/images/1.jpg"
                   className="w-full h-full"
                 />
               ) : user.uid !== "local" ? (
                 <RemoteUser
                   user={user as IAgoraRTCRemoteUser}
-                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
+                  cover="/images/1.jpg"
                   className="w-full h-full"
                 />
               ) : (
-                <Image
-                  src="/images/placeholder.jpg"
-                  alt="You"
-                  className="w-full h-auto"
-                  width={100}
-                  height={100}
-                />
+                <div className="w-full h-full flex justify-center items-center border-2 border-gray-500 rounded-md">
+                  <div className="rounded-full w-40 h-40 object-fill">
+                    <Image
+                      src={one}
+                      alt="You"
+                      width={200}
+                      height={200}
+                      className="object-fill h-full w-full object-center rounded-full"
+                    />
+                  </div>
+                </div>
               )}
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-white text-sm">
                 {user.uid === "local" ? "You" : `User ${user.uid}`}

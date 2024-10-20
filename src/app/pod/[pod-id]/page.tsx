@@ -11,7 +11,7 @@ import {
   leavePodSession,
   updatePodStatus,
 } from "@/lib/podOperations";
-
+import { startSession } from "@/app/api/session/route";
 const appId = process.env.NEXT_PUBLIC_AGORA_API_KEY;
 
 const Pod = dynamic(
@@ -116,6 +116,7 @@ const PodPage = () => {
         isOpen={isSnackbarOpen}
         onClose={() => setIsSnackbarOpen(false)}
       />
+      <button onClick={() => startSession({ podId })}>Start Session</button>
     </>
   );
 };
