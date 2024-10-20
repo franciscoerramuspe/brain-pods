@@ -23,6 +23,7 @@ export default function Chat({ podId, user }: ChatProps) {
   const [newMessage, setNewMessage] = useState('');
   const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
   const subscriptionRef = useRef<RealtimeChannel | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Fetch initial messages
@@ -89,34 +90,40 @@ export default function Chat({ podId, user }: ChatProps) {
     if (uniqueUserIds.length === 0) return;
 
     const fetchUserNames = async () => {
-        const uniqueUserIds = Array.from(
-          new Set(
-            messages
-              .filter((m) => m.user_id !== user.id && !userNames[m.user_id])
-              .map((m) => m.user_id)
-          )
+      const uniqueUserIds = Array.from(
+        new Set(
+          messages
+            .filter((m) => m.user_id !== user.id && !userNames[m.user_id])
+            .map((m) => m.user_id)
+        )
+      );
+
+      if (uniqueUserIds.length === 0) return;
+
+      const { data, error } = await supabase
+        .from('raw_user_meta_data')
+        .select('user_id, name')
+        .in('user_id', uniqueUserIds);
+
+      if (error) {
+        console.error('Error fetching user names:', error);
+      } else if (data) {
+        const newUserNames = Object.fromEntries(
+          data.map((profile) => [profile.user_id, profile.name || 'Anonymous'])
         );
-      
-        if (uniqueUserIds.length === 0) return;
-      
-        const { data, error } = await supabase
-          .from('raw_user_meta_data')
-          .select('user_id, name')
-          .in('user_id', uniqueUserIds);
-      
-        if (error) {
-          console.error('Error fetching user names:', error);
-        } else if (data) {
-          const newUserNames = Object.fromEntries(
-            data.map((profile) => [profile.user_id, profile.name || 'Anonymous'])
-          );
-          setUserNames((prev) => ({ ...prev, ...newUserNames }));
-        }
-      };
-      
+        setUserNames((prev) => ({ ...prev, ...newUserNames }));
+      }
+    };
 
     fetchUserNames();
   }, [messages, userNames]);
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +154,7 @@ export default function Chat({ podId, user }: ChatProps) {
 
   return (
     <div className="flex flex-col h-full bg-[#1E1E1E] text-white">
-      <div className="flex-grow overflow-y-auto p-4 space-y-4 flex flex-col justify-end">
+      <div className="flex-grow overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -167,6 +174,8 @@ export default function Chat({ podId, user }: ChatProps) {
             </div>
           </div>
         ))}
+        {/* Div to scroll into view */}
+        <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700">
         <div className="flex rounded-full bg-[#2C2C2C] overflow-hidden border border-gray-700">
