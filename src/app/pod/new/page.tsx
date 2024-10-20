@@ -27,29 +27,6 @@ export default function NewPod() {
     []
   ); // State for tags
 
-  // const handleCreatePod = async () => {
-  //   // INSERT POD INTO DATABASE, GET POD ID
-
-  //   let finalContext = "";
-
-  //   contextList.forEach(async (item) => {
-  //     if (item[0] instanceof File) {
-  //       const fileReader = new FileReader();
-  //       fileReader.onload = function (fileLoadedEvent) {
-  //         const textFromFileLoaded = fileLoadedEvent.target?.result;
-  //         finalContext += textFromFileLoaded;
-  //         finalContext += "\n";
-  //       };
-  //       fileReader.readAsText(item[0], "UTF-8");
-  //     } else {
-  //       finalContext += item[0].text;
-  //       finalContext += "\n";
-  //     }
-  //   });
-
-  //   // uploadEmbeddings({ podId: podName, context: finalContext });
-  // };
-
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -104,17 +81,6 @@ export default function NewPod() {
     setIsCreatingPod(true);
 
     try {
-      // Process context
-      let finalContext = "";
-      for (const item of contextList) {
-        if (item[0] instanceof File) {
-          const text = await readFileAsText(item[0]);
-          finalContext += text + "\n";
-        } else {
-          finalContext += item[0].text + "\n";
-        }
-      }
-  
       // Create pod
       const { data: podData, error: podError } = await supabase
         .from("pod")
@@ -127,9 +93,9 @@ export default function NewPod() {
         })
         .select()
         .single();
-  
+
       if (podError) throw podError;
-  
+
       // Insert pod topics
       if (podTags.length > 0) {
         const { error: topicError } = await supabase.from("pod_topic").insert(
@@ -138,7 +104,7 @@ export default function NewPod() {
             topic_name: tag.toUpperCase(),
           }))
         );
-  
+
         if (topicError) throw topicError;
       }
 
@@ -180,9 +146,9 @@ export default function NewPod() {
 
   // Helper function to read file as text
   const readFileAsText = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-     reader.onload = (event) => resolve(event.target?.result as string);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target?.result as string);
       reader.onerror = (error) => reject(error);
       reader.readAsText(file, "UTF-8");
     });

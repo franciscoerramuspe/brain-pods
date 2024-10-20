@@ -21,6 +21,7 @@ export interface AnswerOption {
 export interface CardMessage {
   question: string;
   answers: AnswerOption[];
+  id: string;
 }
 
 export interface ChatMessage {
