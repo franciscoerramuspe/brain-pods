@@ -1,12 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
 import Header from "../Header";
-import { useParams, useRouter } from "next/navigation"; // Correct hook for Next.js 13 app directory
+import { useParams, useRouter } from "next/navigation";
 import {
-  LocalUser,
-  RemoteUser,
   useJoin,
   useLocalMicrophoneTrack,
   useLocalCameraTrack,
@@ -14,12 +11,14 @@ import {
   useRemoteUsers,
   IAgoraRTCRemoteUser,
 } from "agora-rtc-react";
-import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon } from "../Icons";
-import { createClient } from "@supabase/supabase-js";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import * as SheetPrimitive from "@radix-ui/react-dialog";
-import Chat from "../Chat";
-import { User } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
+import InteractiveCard from "@/components/InteractiveCard";
+import { startSession } from "@/app/api/session/route";
+import { SocketMessage, CardMessage } from "@/interfaces/types";
+import { Button } from "@/components/ui/button";
+import { PlayIcon, BrainIcon } from "lucide-react";
+import Controls from "./Controls";
+import UserGrid from "./UserGrid";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -27,25 +26,32 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
+const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   const router = useRouter();
   const params = useParams();
   const podId = params["pod-id"] as string;
 
-  const [calling, setCalling] = useState<boolean>(false);
-  const [micOn, setMic] = useState<boolean>(true);
-  const [cameraOn, setCamera] = useState<boolean>(true);
+  const [calling, setCalling] = useState(false);
+  const [micOn, setMic] = useState(true);
+  const [cameraOn, setCamera] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState<User | null>(null);
+  const [wsStatus, setWsStatus] = useState("Not connected");
+  const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(
+    null
+  );
+  const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const usersPerPage = 6;
 
+  // Agora RTC Hooks
   useJoin(
     { appid: appId, channel: podId, token: null },
     calling && !!appId && !!podId
   );
 
-  const { localMicrophoneTrack } = useLocalMicrophoneTrack(true, {
+  const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn, {
     encoderConfig: {
       sampleRate: 48000,
       sampleSize: 16,
@@ -54,7 +60,7 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
     },
   });
 
-  const { localCameraTrack } = useLocalCameraTrack(true, {
+  const { localCameraTrack } = useLocalCameraTrack(cameraOn, {
     encoderConfig: {
       width: 1920,
       height: 1080,
@@ -67,169 +73,131 @@ export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   usePublish([localMicrophoneTrack, localCameraTrack]);
   const remoteUsers = useRemoteUsers();
 
+  // Fetch the authenticated user
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUser(data.user);
-      } else {
-        router.push("/");
-      }
+      if (data.user) setUser(data.user);
+      else router.push("/");
     };
     getUser();
   }, [router]);
 
+  // Enable calling when podId is available
   useEffect(() => {
-    if (localMicrophoneTrack) {
-      localMicrophoneTrack.setEnabled(micOn);
-    }
-  }, [micOn, localMicrophoneTrack]);
-
-  useEffect(() => {
-    if (localCameraTrack) {
-      localCameraTrack.setEnabled(cameraOn);
-    }
-  }, [cameraOn, localCameraTrack]);
-
-  useEffect(() => {
-    if (podId) {
-      setCalling(true);
-    }
+    if (podId) setCalling(true);
   }, [podId]);
 
-  if (!podId) {
-    return <div>Loading...</div>;
-  }
+  // WebSocket connection for interactive card and session status
+  useEffect(() => {
+    const ws = new WebSocket(
+      `wss://brain-pods-cloud-508208716471.us-central1.run.app/?podId=${podId}`
+    );
 
-  const allUsers = [
-    { uid: "local", cameraOn, micOn, videoTrack: localCameraTrack },
-    ...remoteUsers,
-  ];
-  const totalPages = Math.ceil(allUsers.length / usersPerPage);
-  const visibleUsers = allUsers.slice(
-    (currentPage - 1) * usersPerPage,
-    currentPage * usersPerPage
-  );
+    ws.onopen = () => {
+      setWsStatus("Connected");
+      console.log("WebSocket connected");
+    };
+
+    ws.onmessage = (event) => {
+      const message: SocketMessage = JSON.parse(event.data);
+      console.log("Received:", message);
+      handleSocketMessage(message);
+    };
+
+    ws.onerror = (error) => {
+      setWsStatus("Error connecting");
+      console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+      setWsStatus("Disconnected");
+      console.log("WebSocket disconnected");
+    };
+
+    return () => ws.close();
+  }, [podId]);
+
+  const handleSocketMessage = (message: SocketMessage) => {
+    if (message.type === "open") {
+      setSocketMessage(message);
+      setIsInteractiveCardOpen(true);
+    } else if (message.type === "close") {
+      setIsInteractiveCardOpen(false);
+    } else if (message.type === "chat") {
+      setSocketMessage(message);
+    }
+  };
+
+  // Handle toggling microphone and camera
+  const toggleMic = () => {
+    setMic((prev) => !prev);
+    if (localMicrophoneTrack) {
+      localMicrophoneTrack.setEnabled(!micOn);
+    }
+  };
+
+  const toggleCamera = () => {
+    setCamera((prev) => !prev);
+    if (localCameraTrack) {
+      localCameraTrack.setEnabled(!cameraOn);
+    }
+  };
+
+  // Render the loading screen if no podId or user is present
+  if (!podId || !user) return <div>Loading...</div>;
 
   return (
     <div className="bg-[#323232] min-h-screen">
       <Header user={null} textIsDisplayed={false} userIsDisplayed={false} />
-      <div className="p-6 h-[77vh]">
-        <div
-          className={`grid gap-4 max-w-4xl mx-auto h-full ${
-            visibleUsers.length === 1
-              ? "grid-cols-1"
-              : visibleUsers.length <= 2
-              ? "grid-cols-2"
-              : visibleUsers.length <= 4
-              ? "grid-cols-2 grid-rows-2"
-              : "grid-cols-3 grid-rows-2"
-          }`}
+
+      {/* Render the InteractiveCard component */}
+      <InteractiveCard
+        message={socketMessage?.data as CardMessage}
+        isOpen={isInteractiveCardOpen}
+      />
+
+      <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50">
+        <Button
+          onClick={() => startSession({ podId })}
+          disabled={wsStatus === "Disconnected"}
+          className="bg-[#46178f] hover:bg-[#5a1cb3] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors duration-300 ease-in-out flex items-center justify-center overflow-hidden group"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
         >
-          {visibleUsers.map((user, index) => (
-            <div
-              key={user.uid || index}
-              className="relative rounded-lg overflow-hidden w-full"
-            >
-              {user.uid === "local" && cameraOn && localCameraTrack ? (
-                <LocalUser
-                  cameraOn={cameraOn}
-                  micOn={micOn}
-                  videoTrack={localCameraTrack}
-                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
-                  className="w-full h-full"
-                />
-              ) : user.uid !== "local" ? (
-                <RemoteUser
-                  user={user as IAgoraRTCRemoteUser}
-                  cover="https://t4.ftcdn.net/jpg/06/28/36/93/360_F_628369390_99h2NtiLNzHwvQXYlg7JTAX21ID8CSdV.jpg"
-                  className="w-full h-full"
-                />
+          <div className="flex items-center space-x-2 transition-transform duration-300 ease-in-out group-hover:scale-110 origin-center">
+            <span className="text-base">Start Session</span>
+            <span>
+              {isHovered ? (
+                <BrainIcon className="w-5 h-5" />
               ) : (
-                <Image
-                  src="/images/placeholder.jpg"
-                  alt="You"
-                  className="w-full h-auto"
-                  width={100}
-                  height={100}
-                />
+                <PlayIcon className="w-5 h-5" />
               )}
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-white text-sm">
-                {user.uid === "local" ? "You" : `User ${user.uid}`}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {allUsers.length > usersPerPage && (
-          <>
-            <button
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-gray-700 hover:bg-gray-800 transition"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              &lt;
-            </button>
-
-            <button
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-gray-700 hover:bg-gray-800 transition"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              &gt;
-            </button>
-          </>
-        )}
-
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-4 bg-[#4A4A4A] rounded-full p-2">
-          <button
-            onClick={() => setMic((prev) => !prev)}
-            className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors"
-          >
-            {micOn ? (
-              <MicrophoneIcon className="w-6 h-6 text-white" />
-            ) : (
-              <MicrophoneIcon className="w-6 h-6 text-red-500" />
-            )}
-          </button>
-          <button
-            onClick={() => setCamera((prev) => !prev)}
-            className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors"
-          >
-            {cameraOn ? (
-              <VideoIcon className="w-6 h-6 text-white" />
-            ) : (
-              <VideoIcon className="w-6 h-6 text-red-600" />
-            )}
-          </button>
-
-          <Sheet>
-            <SheetTrigger asChild>
-              <button className="p-3 rounded-full bg-[#3D3D3D] hover:bg-[#4A4A4A] transition-colors">
-                <ChatIcon className="w-6 h-6 text-white" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[400px] p-0">
-              <SheetPrimitive.Title className="sr-only">
-                Chat
-              </SheetPrimitive.Title>
-              <Chat podId={podId || ""} user={user} />
-            </SheetContent>
-          </Sheet>
-
-          <button
-            onClick={() => {
-              setCalling(false);
-              router.push("/");
-            }}
-            className="p-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"
-          >
-            <PhoneIcon className="w-6 h-6 text-white" />
-          </button>
-        </div>
+            </span>
+          </div>
+        </Button>
       </div>
+
+      <div className="p-6 h-[77vh]">
+        <UserGrid
+          localCameraTrack={localCameraTrack}
+          cameraOn={cameraOn}
+          micOn={micOn}
+          remoteUsers={remoteUsers}
+          currentPage={currentPage}
+          usersPerPage={usersPerPage}
+        />
+      </div>
+
+      <Controls
+        micOn={micOn}
+        cameraOn={cameraOn}
+        toggleMic={toggleMic}
+        toggleCamera={toggleCamera}
+        podId={podId}
+        user={user}
+        setCalling={setCalling}
+      />
     </div>
   );
 };
