@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { CardMessage } from "@/interfaces/types";
+import { CardMessage, AnswerOption } from "@/interfaces/types";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function InteractiveCard({
   message,
   isOpen,
+  onAnswerSelected,
 }: {
   message: CardMessage;
   isOpen: boolean;
+  onAnswerSelected: (answers: AnswerOption[], index: number) => void;
 }) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -30,10 +32,11 @@ export default function InteractiveCard({
     }
   }, [isOpen, timeLeft, selectedAnswer]);
 
-  const handleAnswerClick = (answer: string, correct: boolean) => {
+  const handleAnswerClick = (answer: string, index: number) => {
     if (selectedAnswer === null) {
       setSelectedAnswer(answer);
-      setIsCorrect(correct);
+      setIsCorrect(message.answers[index].is_correct);
+      onAnswerSelected(message.answers, index);
     }
   };
 
@@ -72,9 +75,7 @@ export default function InteractiveCard({
             return (
               <Button
                 key={answer.answer}
-                onClick={() =>
-                  handleAnswerClick(answer.answer, answer.is_correct)
-                }
+                onClick={() => handleAnswerClick(answer.answer, index)}
                 className={`h-auto min-h-[6rem] text-xl font-bold text-[#333] bg-white hover:bg-opacity-90 rounded-md relative overflow-hidden flex items-center p-4 ${
                   isSelected
                     ? showCorrect

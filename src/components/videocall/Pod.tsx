@@ -14,11 +14,12 @@ import {
 import { createClient, User } from "@supabase/supabase-js";
 import InteractiveCard from "@/components/InteractiveCard";
 import { startSession } from "@/app/api/session/route";
-import { SocketMessage, CardMessage } from "@/interfaces/types";
+import { SocketMessage, CardMessage, AnswerOption } from "@/interfaces/types";
 import { Button } from "@/components/ui/button";
 import { PlayIcon, BrainIcon } from "lucide-react";
 import Controls from "./Controls";
 import UserGrid from "./UserGrid";
+import { PodAnswer } from "@/interfaces/types";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -26,7 +27,12 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-const Pod: React.FC<{ appId: string }> = ({ appId }) => {
+interface PodProps {
+  appId: string;
+  // onAnswerSelected: (answers: AnswerOption[], selectedAnswer: number) => void;
+}
+
+const Pod: React.FC<PodProps> = ({ appId }) => {
   const router = useRouter();
   const params = useParams();
   const podId = params["pod-id"] as string;
@@ -37,10 +43,11 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [user, setUser] = useState<User | null>(null);
   const [wsStatus, setWsStatus] = useState("Not connected");
+  const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
   const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(
     null
   );
-  const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<PodAnswer | null>(null);
   const [isHovered, setIsHovered] = useState(false);
 
   const usersPerPage = 6;
@@ -144,6 +151,30 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
     }
   };
 
+  const handleAnswerSelection = async (answers: AnswerOption[], selectedAnswer: number) => {
+    // onAnswerSelected(answers, selectedAnswer);
+    console.log(selectedAnswer);
+    console.log(socketMessage);
+    if (user && podId) {
+      try {
+        const { data, error } = await supabase
+          .from('pod_answer')
+          .insert({
+            answer_index: selectedAnswer,
+            user_id: user.id,
+            correct: answers[selectedAnswer].is_correct,
+            question_id: socketMessage?.data.id
+          });
+
+        if (error) throw error;
+        console.log('Answer inserted successfully:', data);
+      } catch (error) {
+        console.error('Error inserting answer:', error);
+      }
+    }
+  };
+
+
   // Render the loading screen if no podId or user is present
   if (!podId || !user) return <div>Loading...</div>;
 
@@ -155,6 +186,7 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
       <InteractiveCard
         message={socketMessage?.data as CardMessage}
         isOpen={isInteractiveCardOpen}
+        onAnswerSelected={handleAnswerSelection}
       />
 
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50">

@@ -21,8 +21,17 @@ export interface AnswerOption {
 export interface CardMessage {
   question: string;
   answers: AnswerOption[];
+  id: string;
 }
 
 export interface ChatMessage {
   message: string;
+}
+
+export interface PodAnswer {
+  user_id: string;
+  pod_id: string;
+  question_id: string;
+  selected_answer: string;
+  is_correct: boolean;
 }

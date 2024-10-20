@@ -1,7 +1,13 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { CardMessage, AnswerOption } from "@/interfaces/types";
 
-const AgoraComponent = ({ appId }: { appId: string }) => {
+interface AgoraComponentProps {
+  appId: string;
+  onAnswerSelected: (question: CardMessage, selectedAnswer: AnswerOption) => void;
+}
+
+const AgoraComponent: React.FC<AgoraComponentProps> = ({ appId, onAnswerSelected }) => {
   const [AppWithProvider, setAppWithProvider] = useState<React.FC | null>(null);
 
   useEffect(() => {
@@ -15,7 +21,7 @@ const AgoraComponent = ({ appId }: { appId: string }) => {
 
       const Component = () => (
         <AgoraRTCProvider client={client}>
-          <Pod appId={appId} />
+          <Pod appId={appId} onAnswerSelected={onAnswerSelected} />
         </AgoraRTCProvider>
       );
 
@@ -23,6 +29,13 @@ const AgoraComponent = ({ appId }: { appId: string }) => {
     };
     loadAgora();
   }, [appId]);
+
+  const handleAnswerClick = (question: CardMessage, answer: AnswerOption) => {
+    // ... existing answer handling logic ...
+
+    // Call the onAnswerSelected prop
+    onAnswerSelected(question, answer);
+  };
 
   return AppWithProvider ? <AppWithProvider /> : null;
 };

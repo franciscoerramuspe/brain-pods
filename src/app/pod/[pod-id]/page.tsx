@@ -11,6 +11,7 @@ import {
   leavePodSession,
   updatePodStatus,
 } from "@/lib/podOperations";
+import { PodAnswer, CardMessage, AnswerOption } from "@/interfaces/types";
 
 const appId = process.env.NEXT_PUBLIC_AGORA_API_KEY;
 
@@ -34,6 +35,7 @@ const PodPage = () => {
   const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  
 
   useEffect(() => {
     let userSession: string | null = null;
@@ -100,6 +102,36 @@ const PodPage = () => {
     };
   }, [podId, router]);
 
+//   const handleAnswerSelection = useCallback(async (answers: AnswerOption[], selectedAnswer: number) => {
+//     if (!userId || !podId) {
+//       console.error("User ID or Pod ID is missing");
+//       return;
+//     }
+
+//     const podAnswer: PodAnswer = {
+//       user_id: userId,
+//       answer_index: selectedAnswer,
+//       question_id: socketMessage?.id,
+//       correct: answers[selectedAnswer].is_correct,
+//     };
+
+//     try {
+//       const { data, error } = await supabase
+//         .from('pod_answer')
+//         .insert(podAnswer);
+
+//       if (error) {
+//         throw error;
+//       }
+
+//       console.log("Answer inserted successfully:", data);
+//     } catch (error) {
+//       console.error("Error inserting answer:", error);
+//       setSnackbarMessage("Error saving your answer");
+//       setIsSnackbarOpen(true);
+//     }
+//   }, [userId, podId]);
+
   if (podExists === null) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -110,7 +142,12 @@ const PodPage = () => {
 
   return (
     <>
-      {podExists ? <Pod appId={appId || ""} /> : null}
+      {podExists ? (
+        <Pod 
+          appId={appId || ""} 
+        //   onAnswerSelected={handleAnswerSelection}
+        />
+      ) : null}
       <Snackbar
         message={snackbarMessage}
         isOpen={isSnackbarOpen}
@@ -119,4 +156,5 @@ const PodPage = () => {
     </>
   );
 };
+
 export default PodPage;
