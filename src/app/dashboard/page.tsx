@@ -60,7 +60,7 @@ export default function Dashboard() {
       </main>
 
       {/* Menú de botones en un óvalo centrado */}
-      <footer className="relative">
+      <footer className="relative mb-16">
         <OvalRoomMenu />
       </footer>
     </div>

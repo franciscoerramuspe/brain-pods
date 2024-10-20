@@ -114,7 +114,7 @@ export default function NewPod() {
           finalContext += item[0].text + "\n";
         }
       }
-  
+
       // Create pod
       const { data: podData, error: podError } = await supabase
         .from("pod")
@@ -127,9 +127,9 @@ export default function NewPod() {
         })
         .select()
         .single();
-  
+
       if (podError) throw podError;
-  
+
       // Insert pod topics
       if (podTags.length > 0) {
         const { error: topicError } = await supabase.from("pod_topic").insert(
@@ -138,7 +138,7 @@ export default function NewPod() {
             topic_name: tag.toUpperCase(),
           }))
         );
-  
+
         if (topicError) throw topicError;
       }
 
@@ -180,9 +180,9 @@ export default function NewPod() {
 
   // Helper function to read file as text
   const readFileAsText = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-     reader.onload = (event) => resolve(event.target?.result as string);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target?.result as string);
       reader.onerror = (error) => reject(error);
       reader.readAsText(file, "UTF-8");
     });
@@ -201,7 +201,7 @@ export default function NewPod() {
           New Pod
         </h1>
 
-        <div className="flex-grow flex flex-col items-center justify-center mt-8">
+        <div className="flex-grow flex flex-col items-center justify-center mt-2">
           <div
             className={`flex flex-col items-center justify-center w-fit rounded-lg p-0 transition-all duration-300  ${
               isButtonHovered
