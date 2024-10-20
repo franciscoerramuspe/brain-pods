@@ -37,6 +37,10 @@ export default function Dashboard() {
     return <div>Loading...</div>;
   }
 
+  const navigateToHistory = () => {
+    router.push(`/history/${user.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#323232] flex flex-col">
       {/* Header */}
@@ -45,6 +49,14 @@ export default function Dashboard() {
       {/* SearchBar justo debajo del header */}
       <div className="p-4">
         <SearchBar />
+        <div className="mt-6 flex justify-center">
+          <button
+            onClick={navigateToHistory}
+            className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors"
+          >
+            View History
+          </button>
+        </div>
       </div>
 
       {/* Contenido principal (puede crecer según el espacio disponible) */}

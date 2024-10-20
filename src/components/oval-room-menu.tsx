@@ -13,7 +13,7 @@ export function OvalRoomMenu() {
   };
 
   return (
-    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white border border-zinc-700 rounded-2xl shadow-lg px-2 py-1 dark:bg-zinc-700 dark:border-zinc-700">
+    <div className="fixed bottom-8 z-50 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white border border-zinc-700 rounded-2xl shadow-lg px-2 py-1 dark:bg-zinc-700 dark:border-zinc-700">
       {/* Basics component */}
       <div className="flex-grow">
         <Basics />
