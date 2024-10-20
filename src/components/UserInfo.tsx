@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import Image from "next/image";
 import { supabase } from "../lib/supabase";
 import { LogoutIcon } from "./Icons";
+import { useRouter } from "next/navigation";
 
 interface UserInfoProps {
   user: User;
@@ -11,6 +12,7 @@ interface UserInfoProps {
 const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,6 +47,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
     await supabase.auth.signOut();
   };
 
+  const navigateToHistory = () => {
+    router.push(`/history/${user.id}`);
+  };
+
   return (
     <div ref={dropdownRef} className="relative">
       <div
@@ -68,6 +74,10 @@ const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
       </div>
       {isDropdownOpen && (
         <div className="absolute top-full right-0 mt-2 bg-[#D9D9D9] rounded-lg shadow-lg z-50 w-full min-w-[120px]">
+          <button
+            className="w-full flex items-center px-4 py-3 text-sm text-black hover:bg-[#C0C0C0] transition-colors duration-200 rounded-lg"
+            onClick={navigateToHistory}
+          ><span>View History</span></button>
           <button
             className="w-full flex items-center px-4 py-3 text-sm text-black hover:bg-[#C0C0C0] transition-colors duration-200 rounded-lg"
             onClick={handleLogout}

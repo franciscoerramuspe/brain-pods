@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import SearchBar from "../../components/searchbar/SearchBar";
 import { User } from "@supabase/supabase-js";
 import Header from "../../components/Header";
+import ScrollList from "../../components/ScrollList";
 import { OvalRoomMenu } from "../../components/oval-room-menu";
 
 export default function Dashboard() {
@@ -48,21 +49,18 @@ export default function Dashboard() {
       {/* SearchBar justo debajo del header */}
       <div className="p-4">
         <SearchBar />
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={navigateToHistory}
-            className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors"
-          >
-            View History
-          </button>
-        </div>
       </div>
 
       {/* Contenido principal (puede crecer según el espacio disponible) */}
-      <main className="p-4 flex-grow flex items-center justify-center"></main>
+      <main className="p-4 flex-grow flex items-start justify-center overflow-hidden gap-15 mt-4">
+        <div className="flex flex-col items-center justify-start gap-10 pt-0">
+          <ScrollList title="Popular Tags" />
+          <ScrollList title="General Tags" />
+        </div>
+      </main>
 
       {/* Menú de botones en un óvalo centrado */}
-      <footer className="relative">
+      <footer className="relative mb-16">
         <OvalRoomMenu />
       </footer>
     </div>

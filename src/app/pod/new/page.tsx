@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "../../../components/Header";
 import ContextProvider from "../../../components/ContextProvider";
+import { uploadEmbeddings } from "@/app/api/files/route";
 import { TextContext } from "@/interfaces/types";
 
 export default function NewPod() {
@@ -26,6 +27,28 @@ export default function NewPod() {
     []
   ); // State for tags
 
+  // const handleCreatePod = async () => {
+  //   // INSERT POD INTO DATABASE, GET POD ID
+
+  //   let finalContext = "";
+
+  //   contextList.forEach(async (item) => {
+  //     if (item[0] instanceof File) {
+  //       const fileReader = new FileReader();
+  //       fileReader.onload = function (fileLoadedEvent) {
+  //         const textFromFileLoaded = fileLoadedEvent.target?.result;
+  //         finalContext += textFromFileLoaded;
+  //         finalContext += "\n";
+  //       };
+  //       fileReader.readAsText(item[0], "UTF-8");
+  //     } else {
+  //       finalContext += item[0].text;
+  //       finalContext += "\n";
+  //     }
+  //   });
+
+  //   // uploadEmbeddings({ podId: podName, context: finalContext });
+  // };
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -91,7 +114,7 @@ export default function NewPod() {
           finalContext += item[0].text + "\n";
         }
       }
-  
+
       // Create pod
       const { data: podData, error: podError } = await supabase
         .from("pod")
@@ -104,9 +127,9 @@ export default function NewPod() {
         })
         .select()
         .single();
-  
+
       if (podError) throw podError;
-  
+
       // Insert pod topics
       if (podTags.length > 0) {
         const { error: topicError } = await supabase.from("pod_topic").insert(
@@ -115,25 +138,36 @@ export default function NewPod() {
             topic_name: tag.toUpperCase(),
           }))
         );
-  
+
         if (topicError) throw topicError;
       }
 
-      // Hit the API endpoint to upload embeddings
-      const response = await fetch('/api/files', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          podId: podData.id,
-          context: finalContext,
-        }),
-      });
+      // Upload embeddings
+      // let finalContext = "";
 
-      if (!response.ok) {
-        throw new Error('Failed to upload embeddings');
-      }
+      // const processContextList = async () => {
+      //   for (const item of contextList) {
+      //     if (item[0] instanceof File) {
+      //       const fileContent = await new Promise<string>((resolve) => {
+      //         const fileReader = new FileReader();
+      //         fileReader.onload = (event) => {
+      //           resolve(event.target?.result as string);
+      //         };
+      //         fileReader.readAsText(item[0] as File);
+      //       });
+      //       finalContext += fileContent + "\n";
+      //     } else {
+      //       finalContext += (item[0] as TextContext).text + "\n";
+      //     }
+      //   }
+      // };
+
+      // await processContextList();
+
+      await uploadEmbeddings({
+        podId: podData.id,
+        context: finalContext,
+      });
 
       // Redirect to the new pod
       router.push(`/pod/${podData.id}`);
@@ -146,9 +180,9 @@ export default function NewPod() {
 
   // Helper function to read file as text
   const readFileAsText = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-     reader.onload = (event) => resolve(event.target?.result as string);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => resolve(event.target?.result as string);
       reader.onerror = (error) => reject(error);
       reader.readAsText(file, "UTF-8");
     });
@@ -167,7 +201,7 @@ export default function NewPod() {
           New Pod
         </h1>
 
-        <div className="flex-grow flex flex-col items-center justify-center mt-8">
+        <div className="flex-grow flex flex-col items-center justify-center mt-2">
           <div
             className={`flex flex-col items-center justify-center w-fit rounded-lg p-0 transition-all duration-300  ${
               isButtonHovered
@@ -217,11 +251,11 @@ export default function NewPod() {
             <Button
               className="mt-4"
               onClick={createPod}
-            disabled={!podName || isCreatingPod}
+              disabled={!podName || isCreatingPod} // Disable button during pod creation
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
             >
-            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
+              {isCreatingPod ? "Creating Pod..." : "Create Pod"}
             </Button>
           </div>
         </div>

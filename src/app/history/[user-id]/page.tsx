@@ -1,13 +1,14 @@
 'use client';
 
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../../components/Header';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../../lib/supabase';
-
 interface Pod {
   id: string;
+  name: string; // Added name field
   owner_id: string;
   is_active: boolean;
   is_premium: boolean;
@@ -47,52 +48,26 @@ export default function HistoryPage() {
   const fetchPodSessions = async (currentUser: User) => {
     try {
       console.log('Fetching pod sessions for user:', currentUser.id);
-      
+  
       const { data: sessions, error: sessionsError } = await supabase
         .from('user_pod_session')
-        .select('*')
-    
-
+        .select(`
+          *,
+          pod (
+            *
+          )
+        `)
+        .eq('user_id', currentUser.id);
+  
       if (sessionsError) {
         console.error('Error fetching pod sessions:', sessionsError.message);
         return;
       }
-
-      console.log('Fetched sessions:', sessions);
-
+  
+      console.log('Fetched sessions with pods:', sessions);
+  
       if (sessions && sessions.length > 0) {
-        // Filter sessions to only include those belonging to the current user
-        const userSessions = sessions.filter(session => session.user_id === currentUser.id);
-
-        console.log('User sessions:', userSessions);
-
-        // Extract unique pod IDs from user sessions
-        const podIds = Array.from(new Set(userSessions.map((session) => session.pod_id)));
-        
-        // Fetch pods using the pod IDs
-        const { data: pods, error: podsError } = await supabase
-          .from('pod')
-          .select('*')
-          .in('id', podIds);
-
-        if (podsError) {
-          console.error('Error fetching pods:', podsError.message);
-          return;
-        }
-
-        // Create a map of podId to pod data
-        const podMap = new Map<string, Pod>();
-        pods.forEach((pod) => {
-          podMap.set(pod.id, pod);
-        });
-
-        // Combine sessions with pod data
-        const sessionsWithPods = userSessions.map((session) => ({
-          ...session,
-          pod: podMap.get(session.pod_id) || null,
-        }));
-
-        setPodSessions(sessionsWithPods as PodSession[]);
+        setPodSessions(sessions as PodSession[]);
       } else {
         console.log('No sessions found for user');
         setPodSessions([]);
@@ -101,6 +76,7 @@ export default function HistoryPage() {
       console.error('Error fetching pod sessions:', error);
     }
   };
+  
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -141,7 +117,7 @@ export default function HistoryPage() {
               >
                 <div>
                   <h2 className="text-xl font-semibold">
-                    Pod ID: {session.pod ? session.pod.id : 'Unknown Pod'}
+                    {session.pod && session.pod.name ? session.pod.name : 'Unknown Pod'}
                   </h2>
                   <p className="text-sm text-gray-300">
                     Joined at: {formatDate(session.joined_at)}
