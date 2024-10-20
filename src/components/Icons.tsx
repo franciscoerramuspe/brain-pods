@@ -75,7 +75,7 @@ export const LightningIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
   >
     <path
       d="M11.3342 2.49219L4.84751 10.7843C4.59348 11.109 4.46646 11.2714 4.44479 11.4201C4.42597 11.5493 4.4499 11.6779 4.50968 11.7688C4.57845 11.8734 4.73972 11.8952 5.06226 11.9386L9.37895 12.5208L7.87813 19.1799L14.3648 10.8878C14.6188 10.5631 14.7458 10.4008 14.7675 10.252C14.7863 10.1228 14.7624 9.99422 14.7026 9.9033C14.6338 9.79873 14.4726 9.77699 14.1501 9.73349L9.83337 9.15133L11.3342 2.49219Z"
-      stroke="#161616"
+      stroke="#ffffff"
       strokeOpacity="0.55"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -200,7 +200,7 @@ export const BookIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 export const TagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
-    fill="#000000"
+    fill="#ffffff"
     viewBox="0 0 1024 1024"
     xmlns="http://www.w3.org/2000/svg"
     transform="matrix(-1, 0, 0, 1, 0, 0)"
@@ -235,7 +235,7 @@ export const LetterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       {" "}
       <path
         d="M12 3V21M9 21H15M19 6V3H5V6"
-        stroke="#000000"
+        stroke="#ffffff"
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -260,7 +260,7 @@ export const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
       {" "}
       <path
         d="M12 3C12 7.97056 16.0294 12 21 12C16.0294 12 12 16.0294 12 21C12 16.0294 7.97056 12 3 12C7.97056 12 12 7.97056 12 3Z"
-        stroke="#000000"
+        stroke="#ffffff"
         stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
