@@ -76,7 +76,7 @@ export const LightningIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
   >
     <path
       d="M11.3342 2.49219L4.84751 10.7843C4.59348 11.109 4.46646 11.2714 4.44479 11.4201C4.42597 11.5493 4.4499 11.6779 4.50968 11.7688C4.57845 11.8734 4.73972 11.8952 5.06226 11.9386L9.37895 12.5208L7.87813 19.1799L14.3648 10.8878C14.6188 10.5631 14.7458 10.4008 14.7675 10.252C14.7863 10.1228 14.7624 9.99422 14.7026 9.9033C14.6338 9.79873 14.4726 9.77699 14.1501 9.73349L9.83337 9.15133L11.3342 2.49219Z"
-      stroke="#161616"
+      stroke="#ffffff"
       strokeOpacity="0.55"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -199,6 +199,76 @@ export const BookIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+export const TagIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    fill="#ffffff"
+    viewBox="0 0 1024 1024"
+    xmlns="http://www.w3.org/2000/svg"
+    transform="matrix(-1, 0, 0, 1, 0, 0)"
+    {...props}
+  >
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      <path d="M1023.98 416.272l-.001-338.367c0-42.944-34.944-77.904-77.872-77.904H600.73c-21.68 0-54.496 0-75.92 21.44L18.875 527.393c-12.16 12.16-18.88 28.304-18.88 45.487 0 17.216 6.689 33.376 18.849 45.537l386.8 386.72C417.756 1017.312 433.916 1024 451.1 1024s33.36-6.689 45.487-18.849l505.952-505.968c21.696-21.648 21.569-52.816 21.441-82.912zm-66.685 37.666L450.878 959.874 64.126 572.658 569.518 67.154c5.088-3.152 23.408-3.152 30.992-3.152l14.4.048 331.2-.048c7.665 0 13.873 6.24 13.873 13.904V416.53c.064 12.176.129 32.544-2.688 37.408zM768.014 128.001c-70.689 0-128 57.311-128 128s57.312 128 128 128 128-57.312 128-128-57.312-128-128-128zm0 192c-35.344 0-64-28.656-64-64s28.656-64 64-64 64 28.656 64 64-28.656 64-64 64z"></path>
+    </g>
+  </svg>
+);
+
+export const LetterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {" "}
+      <path
+        d="M12 3V21M9 21H15M19 6V3H5V6"
+        stroke="#ffffff"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>{" "}
+    </g>
+  </svg>
+);
+export const StarIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      {" "}
+      <path
+        d="M12 3C12 7.97056 16.0294 12 21 12C16.0294 12 12 16.0294 12 21C12 16.0294 7.97056 12 3 12C7.97056 12 12 7.97056 12 3Z"
+        stroke="#ffffff"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>{" "}
+    </g>
+  </svg>
+);
 export const FileIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg
     viewBox="-8 0 32 32"

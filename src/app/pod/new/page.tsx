@@ -19,16 +19,14 @@ export default function NewPod() {
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
+  const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
   const [contextList, setContextList] = useState<[TextContext | File][]>([]);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
+  const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
+  const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
+    []
+  ); // State for tags
 
-  const tagsList = [
-    { value: "react", label: "React" },
-    { value: "angular", label: "Angular" },
-    { value: "vue", label: "Vue" },
-    { value: "svelte", label: "Svelte" },
-    { value: "ember", label: "Ember" },
-  ];
 
   const handleCreatePod = async () => {
     // INSERT POD INTO DATABASE, GET POD ID
@@ -73,6 +71,75 @@ export default function NewPod() {
     };
   }, [router]);
 
+  // Fetch tags from supabase
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pod_tag")
+          .select("id, tag");
+
+        if (error) throw error;
+
+        const formattedTags = data.map((tag) => ({
+          value: tag.tag,
+          label: tag.tag
+            ? tag.tag
+                .toLowerCase()
+                .replace(/\b\w/g, (c: string) => c.toUpperCase())
+            : "",
+        }));
+        console.log(data);
+        setTagsList(formattedTags);
+      } catch (error) {
+        console.error("Error fetching tags: ", error);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
+  const createPod = async () => {
+    if (!user || !podName || podTags.length === 0) return;
+
+    setIsCreatingPod(true);
+
+    try {
+      const { data: podData, error: podError } = await supabase
+        .from("pod")
+        .insert({
+          owner_id: user?.id,
+          name: podName,
+        is_active: true,
+          is_premium: false,
+          is_public: true,
+        })
+        .select()
+        .single();
+
+      if (podError) throw podError;
+
+      // Insert pod topics
+      if (podTags.length > 0) {
+        const { error: topicError } = await supabase.from("pod_topic").insert(
+          podTags.map((tag) => ({
+            pod_id: podData.id,
+            topic_name: tag.toUpperCase(),
+          }))
+        );
+
+        if (topicError) throw topicError;
+      }
+
+      // Redirect to the new pod
+      router.push(`/pod/${podData.id}`);
+    } catch (error) {
+      console.error("Error creating pod: ", error);
+    } finally {
+      setIsCreatingPod(false);
+    }
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
@@ -92,6 +159,10 @@ export default function NewPod() {
               isButtonHovered
                 ? "bg-gradient-to-r from-pink-600 to-purple-600 backdrop-blur-lg p-1"
                 : "bg-transparent"
+            } ${
+              isCancelHovered
+                ? "bg-gradient-to-r from-red-600 to-orange-600 backdrop-blur-lg p-1"
+                : "bg-transparent"
             }`}
           >
             <div className="bg-[#323232] p-5 rounded-[calc(0.60rem-0.25rem)] border border-[#4A4945]">
@@ -106,7 +177,7 @@ export default function NewPod() {
                   }
                 />
                 <MultiSelect
-                  options={tagsList}
+                  options={tagsList} // Now using the state for tagsList
                   onValueChange={setPodTags}
                   defaultValue={podTags}
                   placeholder="Select Tags"
@@ -120,14 +191,26 @@ export default function NewPod() {
               />
             </div>
           </div>
-          <Button
-            className="mt-4 mb-0"
-            onMouseOver={() => setIsButtonHovered(true)}
-            onMouseLeave={() => setIsButtonHovered(false)}
-            onClick={handleCreatePod}
-          >
-            Create Pod
-          </Button>
+          <div className="flex flex-row gap-4">
+            <Button
+              className="mt-4 mb-0"
+              onMouseOver={() => setIsCancelHovered(true)}
+              onMouseLeave={() => setIsCancelHovered(false)}
+              onClick={() => router.push("/dashboard")}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="mt-4"
+              onClick={createPod}
+            disabled={!podName || isCreatingPod}// Disable button during pod creation
+              onMouseOver={() => setIsButtonHovered(true)}
+              onMouseLeave={() => setIsButtonHovered(false)}
+              onClick={handleCreatePod}
+            >
+            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
