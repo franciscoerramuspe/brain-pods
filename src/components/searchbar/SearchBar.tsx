@@ -4,8 +4,11 @@ import Dropdown from "./Dropdown";
 import TagMenu from "./TagMenu";
 import { supabase } from "../../lib/supabase";
 import { Option, Pod, SearchBarProps } from "./types";
+import { Groq } from "groq-sdk";
+import { getGroqChatCompletion } from "@/app/api/models/groq/route";
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+  const [isAiSearching, setIsAiSearching] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState<Option>({
@@ -58,6 +61,65 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     };
   }, []);
 
+  const hanndleAiSearch = async() => {
+    if (selectedOption.value !== "Ask AI" || !searchTerm) return; 
+  
+    setIsAiSearching(true);
+  
+    const tags: String[] = ["MATH", "ALGORITHMS", "BIOLOGY", "HISTORY", "CHEMISTRY", "HASHMAPS", "CALCULUS", "ALGEBRA", "GEOMETRY", "SPANISH", "LAW", "ETHICS", "PHYSICS"];
+  
+    try {
+      const completion = await getGroqChatCompletion([
+        { role: "system", content: "You are an AI assistant that helps users find relevant study pods based on their interests." },
+        { role: "user", content: `I want to study about ${searchTerm}. Suggest some relevant topics or tags that might be associated with this subject. Tags that the app currently have are: ${tags.join(", ")}. Only answer with tags that are in the list separated by commas.` }
+      ]);
+      
+      const suggestedTags = completion.choices[0].message.content
+        .split(",")
+        .map((tag: string) => tag.trim().toUpperCase())
+        .filter((tag: string) => tags.includes(tag));
+  
+      console.log("suggestedTags ", suggestedTags);
+  
+      let query = supabase
+        .from("pod")
+        .select("*, pod_topic(topic_name)")
+        .match({is_active: true, is_public: true});
+  
+      const { data: podTopicData, error: topicError } = await supabase
+        .from("pod_topic")
+        .select("pod_id")
+        .in("topic_name", suggestedTags);
+  
+      if (topicError) {
+        console.error("Error fetching pods by tags:", topicError);
+        return;
+      }
+  
+      const podIds = podTopicData.map((topic) => topic.pod_id);
+      query = query.in("id", podIds);
+  
+      const { data: podData, error: podError } = await query;
+  
+      if (podError) {
+        console.error("Error fetching pods:", podError);
+      } else {
+        const podsWithTags = podData.map((pod: any) => ({
+          ...pod,
+          tags: pod.pod_topic.map((topic: any) => topic.topic_name),
+        }));
+        setSuggestions(podsWithTags);
+        setShowSuggestions(true);
+      }
+    } catch (error) {
+      console.error("Error fetching AI search results:", error);
+      setSuggestions([]);
+      setShowSuggestions(true);
+    } finally {
+      setIsAiSearching(false);
+    }
+  }
+
   useEffect(() => {
     const fetchTags = async () => {
       const { data, error } = await supabase.from("pod_tag").select("tag");
@@ -70,33 +132,32 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   useEffect(() => {
     const fetchPods = async () => {
-      if (searchTerm.length === 0 && selectedTags.length === 0) return;
-
-      let query = supabase
-        .from("pod")
-        .select("*, pod_topic(topic_name)")
-        .eq("is_active", true)
-        .eq("is_public", true);
-
-      if (
-        searchTerm.length > 0 &&
-        selectedOption.value === "Search By Pod Name"
-      ) {
-        query = query.ilike("name", `%${searchTerm}%`);
+      if (searchTerm.length === 0 && selectedTags.length === 0) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
       }
 
-      if (selectedTags.length > 0 && selectedOption.value === "Search By Tag") {
-        const { data: podTopicData, error } = await supabase
-          .from("pod_topic")
-          .select("pod_id, topic_name")
-          .in("topic_name", selectedTags);
+      let query = supabase
+      .from("pod")
+      .select("*, pod_topic(topic_name)")
+        .match({is_active: true, is_public: true});
+  
+      if (selectedOption.value === "Search By Pod Name" && searchTerm.length > 0) {
+      query = query.ilike("name", `%${searchTerm}%`);
+    } else if (selectedOption.value === "Search By Tag" && selectedTags.length > 0) {
+      const { data: podTopicData, error: topicError } = await supabase
+        .from("pod_topic")
+        .select("pod_id")
+        .in("topic_name", selectedTags);
 
-        if (error) {
-          console.error("Error fetching pods by tags:", error);
-        } else {
-          const podIds = podTopicData.map((topic: any) => topic.pod_id);
-          query = query.in("id", podIds);
-        }
+      if (topicError) {
+        console.error("Error fetching pods by tags:", topicError);
+        return;
+      }
+
+      const podIds = podTopicData.map((topic) => topic.pod_id);
+      query = query.in("id", podIds);
       }
 
       const { data: podData, error: podError } = await query;
@@ -107,26 +168,24 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
           ...pod,
           tags: pod.pod_topic.map((topic: any) => topic.topic_name),
         }));
-
-        setPods(podsWithTags);
-
-        if (
-          searchTerm.length > 0 &&
-          selectedOption.value === "Search By Pod Name"
-        ) {
-          setSuggestions(podsWithTags);
-          setShowSuggestions(true); // Show suggestions when there are results
-        } else {
-          setShowSuggestions(false); // Hide suggestions when there are no results
-        }
+        setSuggestions(podsWithTags);
+        setShowSuggestions(true);
       }
     };
-
-    fetchPods();
-  }, [selectedTags, searchTerm, selectedOption]);
+  
+    const debounce = setTimeout(() => {
+      fetchPods();
+    }, 300);
+  
+    return () => clearTimeout(debounce);
+  }, [searchTerm, selectedTags, selectedOption]);
 
   const handleSearch = () => {
-    onSearch(searchTerm, selectedOption);
+    if (selectedOption.value === "Ask AI") {
+      hanndleAiSearch();
+    } else {
+      onSearch(searchTerm, selectedOption);
+    }
   };
 
   const handleOptionChange = (newOption: Option) => {
@@ -166,28 +225,31 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
           type="text"
           placeholder={getPlaceholder()}
           className={`bg-[#323232] text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg ${
-            selectedOption.value !== "Search By Pod Name"
+            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
               ? "cursor-not-allowed opacity-50"
               : ""
           }`}
           value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setShowSuggestions(e.target.value.length > 0);
-          }}
-          disabled={selectedOption.value !== "Search By Pod Name"}
-          readOnly={selectedOption.value === "Search By Tag"}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={!["Search By Pod Name", "Ask AI"].includes(selectedOption.value)}
         />
 
         <button
-          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl"
+          className={`bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl ${
+            selectedOption.value === "Ask AI" ? "hover:bg-[#4A4A4A]" : "opacity-50 cursor-not-allowed"
+          }`}
           onClick={handleSearch}
+          disabled={isAiSearching || selectedOption.value !== "Ask AI"}
         >
-          <LightningIcon className="w-8 h-8" stroke="white" />
+          {isAiSearching ? (
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+          ) : (
+            <LightningIcon className="w-8 h-8" stroke="white" />
+          )}
         </button>
       </div>
 
-      {showSuggestions && selectedOption.value === "Search By Pod Name" && (
+      {showSuggestions && (
         <div
           ref={suggestionsRef}
           className="absolute left-0 top-full mt-2 p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto rounded-lg shadow-lg w-full z-10"
