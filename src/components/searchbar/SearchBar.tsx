@@ -111,6 +111,15 @@ const SearchBar: React.FC = () => {
     }
   };
 
+  const getPlaceholder = () => {
+    if (selectedOption.value === "Search By Pod Name") {
+      return "Search by Pod Name";
+    } else if (selectedOption.value === "Ask AI") {
+      return "I want to study about...";
+    }
+    return "";
+  };
+
   return (
     <div className="relative w-full max-w-2xl mx-auto">
       {/* SearchBar Component */}
@@ -124,18 +133,19 @@ const SearchBar: React.FC = () => {
           dropdownRef={dropdownRef}
         />
 
-        {/* Campo de búsqueda que se deshabilita si no está seleccionada la opción "Search By Pod Name" */}
         <input
           type="text"
-          placeholder="Search by Pod Name"
+          placeholder={getPlaceholder()}
           className={`bg-[#323232] text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg ${
-            selectedOption.value !== "Search By Pod Name"
+            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
               ? "cursor-not-allowed opacity-50"
               : ""
           }`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          disabled={selectedOption.value !== "Search By Pod Name"} // Solo es interactivo si "Search By Pod Name" está activada
+          disabled={
+            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
+          }
         />
 
         <button className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl">
