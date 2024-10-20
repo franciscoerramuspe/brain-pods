@@ -9,7 +9,6 @@ import {
   useLocalCameraTrack,
   usePublish,
   useRemoteUsers,
-  IAgoraRTCRemoteUser,
 } from "agora-rtc-react";
 import { createClient, User } from "@supabase/supabase-js";
 import InteractiveCard from "@/components/InteractiveCard";
@@ -19,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { PlayIcon, BrainIcon } from "lucide-react";
 import Controls from "./Controls";
 import UserGrid from "./UserGrid";
+import UserTracker from "@/components/UserTracker";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -72,6 +72,9 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
 
   usePublish([localMicrophoneTrack, localCameraTrack]);
   const remoteUsers = useRemoteUsers();
+
+  // Calculate total users
+  const totalUsers = remoteUsers.length + 1; // +1 for the local user
 
   // Fetch the authenticated user
   useEffect(() => {
@@ -157,6 +160,7 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
         isOpen={isInteractiveCardOpen}
       />
 
+      {/* Start Session Button */}
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50">
         <Button
           onClick={() => startSession({ podId })}
@@ -178,6 +182,7 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
         </Button>
       </div>
 
+      {/* User Grid */}
       <div className="p-6 h-[77vh]">
         <UserGrid
           localCameraTrack={localCameraTrack}
@@ -189,6 +194,7 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
         />
       </div>
 
+      {/* Controls */}
       <Controls
         micOn={micOn}
         cameraOn={cameraOn}
@@ -198,6 +204,9 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
         user={user}
         setCalling={setCalling}
       />
+
+      {/* User Tracker */}
+      <UserTracker podId={podId} userCount={totalUsers} />
     </div>
   );
 };
