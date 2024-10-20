@@ -39,9 +39,11 @@ export default function InteractiveCard({
 
   return (
     <Drawer open={isOpen}>
-      <DrawerContent className="bg-[#1a1a1a] flex flex-col items-center justify-start min-h-screen p-6">
-        <div className="w-full max-w-4xl aspect-video bg-[#46178f] mb-4 flex items-center justify-center relative p-8">
-          <h2 className="text-4xl text-white font-bold text-center">{message?.question}</h2>
+      <DrawerContent className="bg-[#1a1a1a] flex flex-col items-center justify-start h-screen p-6">
+        <div className="w-full max-w-4xl h-[45vh] aspect-video bg-[#46178f] mb-4 flex items-center justify-center relative p-8">
+          <h2 className="text-4xl text-white font-bold text-center">
+            {message?.question}
+          </h2>
           <div className="absolute top-4 right-4 w-16 h-16 rounded-full bg-[#333] flex items-center justify-center">
             <span className="text-2xl text-white font-bold">{timeLeft}</span>
           </div>
@@ -70,9 +72,15 @@ export default function InteractiveCard({
             return (
               <Button
                 key={answer.answer}
-                onClick={() => handleAnswerClick(answer.answer, answer.is_correct)}
+                onClick={() =>
+                  handleAnswerClick(answer.answer, answer.is_correct)
+                }
                 className={`h-auto min-h-[6rem] text-xl font-bold text-[#333] bg-white hover:bg-opacity-90 rounded-md relative overflow-hidden flex items-center p-4 ${
-                  isSelected ? (showCorrect ? "ring-4 ring-green-500" : "ring-4 ring-red-500") : ""
+                  isSelected
+                    ? showCorrect
+                      ? "ring-4 ring-green-500"
+                      : "ring-4 ring-red-500"
+                    : ""
                 }`}
                 disabled={selectedAnswer !== null}
               >
