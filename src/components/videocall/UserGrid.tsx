@@ -62,7 +62,11 @@ const UserGrid: React.FC<UserGridProps> = ({
               className="w-full h-full"
             />
           ) : (
-            <Image src={noCamera} alt="You" className="w-full h-full" />
+            <Image
+              src={noCamera}
+              alt="You"
+              className="w-full h-full object-cover"
+            />
           )}
           <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 px-2 py-1 rounded text-white text-sm">
             {user.uid === "local" ? "You" : `User ${user.uid}`}
