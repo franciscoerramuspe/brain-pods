@@ -61,46 +61,69 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     };
   }, []);
 
-  const hanndleAiSearch = async() => {
-    if (selectedOption.value !== "Ask AI" || !searchTerm) return; 
-  
+  const hanndleAiSearch = async () => {
+    if (selectedOption.value !== "Ask AI" || !searchTerm) return;
+
     setIsAiSearching(true);
-  
-    const tags: String[] = ["MATH", "ALGORITHMS", "BIOLOGY", "HISTORY", "CHEMISTRY", "HASHMAPS", "CALCULUS", "ALGEBRA", "GEOMETRY", "SPANISH", "LAW", "ETHICS", "PHYSICS"];
-  
+
+    const tags: String[] = [
+      "MATH",
+      "ALGORITHMS",
+      "BIOLOGY",
+      "HISTORY",
+      "CHEMISTRY",
+      "HASHMAPS",
+      "CALCULUS",
+      "ALGEBRA",
+      "GEOMETRY",
+      "SPANISH",
+      "LAW",
+      "ETHICS",
+      "PHYSICS",
+    ];
+
     try {
       const completion = await getGroqChatCompletion([
-        { role: "system", content: "You are an AI assistant that helps users find relevant study pods based on their interests." },
-        { role: "user", content: `I want to study about ${searchTerm}. Suggest some relevant topics or tags that might be associated with this subject. Tags that the app currently have are: ${tags.join(", ")}. Only answer with tags that are in the list separated by commas.` }
+        {
+          role: "system",
+          content:
+            "You are an AI assistant that helps users find relevant study pods based on their interests.",
+        },
+        {
+          role: "user",
+          content: `I want to study about ${searchTerm}. Suggest some relevant topics or tags that might be associated with this subject. Tags that the app currently have are: ${tags.join(
+            ", "
+          )}. Only answer with tags that are in the list separated by commas.`,
+        },
       ]);
-      
+
       const suggestedTags = completion.choices[0].message.content
         .split(",")
         .map((tag: string) => tag.trim().toUpperCase())
         .filter((tag: string) => tags.includes(tag));
-  
+
       console.log("suggestedTags ", suggestedTags);
-  
+
       let query = supabase
         .from("pod")
         .select("*, pod_topic(topic_name)")
-        .match({is_active: true, is_public: true});
-  
+        .match({ is_active: true, is_public: true });
+
       const { data: podTopicData, error: topicError } = await supabase
         .from("pod_topic")
         .select("pod_id")
         .in("topic_name", suggestedTags);
-  
+
       if (topicError) {
         console.error("Error fetching pods by tags:", topicError);
         return;
       }
-  
+
       const podIds = podTopicData.map((topic) => topic.pod_id);
       query = query.in("id", podIds);
-  
+
       const { data: podData, error: podError } = await query;
-  
+
       if (podError) {
         console.error("Error fetching pods:", podError);
       } else {
@@ -118,7 +141,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     } finally {
       setIsAiSearching(false);
     }
-  }
+  };
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -132,6 +155,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
 
   useEffect(() => {
     const fetchPods = async () => {
+      if (selectedOption.value === "Ask AI") {
+        return; // Don't fetch regular pods for AI search
+      }
+
       if (searchTerm.length === 0 && selectedTags.length === 0) {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -139,25 +166,31 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       }
 
       let query = supabase
-      .from("pod")
-      .select("*, pod_topic(topic_name)")
-        .match({is_active: true, is_public: true});
-  
-      if (selectedOption.value === "Search By Pod Name" && searchTerm.length > 0) {
-      query = query.ilike("name", `%${searchTerm}%`);
-    } else if (selectedOption.value === "Search By Tag" && selectedTags.length > 0) {
-      const { data: podTopicData, error: topicError } = await supabase
-        .from("pod_topic")
-        .select("pod_id")
-        .in("topic_name", selectedTags);
+        .from("pod")
+        .select("*, pod_topic(topic_name)")
+        .match({ is_active: true, is_public: true });
 
-      if (topicError) {
-        console.error("Error fetching pods by tags:", topicError);
-        return;
-      }
+      if (
+        selectedOption.value === "Search By Pod Name" &&
+        searchTerm.length > 0
+      ) {
+        query = query.ilike("name", `%${searchTerm}%`);
+      } else if (
+        selectedOption.value === "Search By Tag" &&
+        selectedTags.length > 0
+      ) {
+        const { data: podTopicData, error: topicError } = await supabase
+          .from("pod_topic")
+          .select("pod_id")
+          .in("topic_name", selectedTags);
 
-      const podIds = podTopicData.map((topic) => topic.pod_id);
-      query = query.in("id", podIds);
+        if (topicError) {
+          console.error("Error fetching pods by tags:", topicError);
+          return;
+        }
+
+        const podIds = podTopicData.map((topic) => topic.pod_id);
+        query = query.in("id", podIds);
       }
 
       const { data: podData, error: podError } = await query;
@@ -172,11 +205,11 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
         setShowSuggestions(true);
       }
     };
-  
+
     const debounce = setTimeout(() => {
       fetchPods();
     }, 300);
-  
+
     return () => clearTimeout(debounce);
   }, [searchTerm, selectedTags, selectedOption]);
 
@@ -231,12 +264,16 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
           }`}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          disabled={!["Search By Pod Name", "Ask AI"].includes(selectedOption.value)}
+          disabled={
+            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
+          }
         />
 
         <button
           className={`bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl ${
-            selectedOption.value === "Ask AI" ? "hover:bg-[#4A4A4A]" : "opacity-50 cursor-not-allowed"
+            selectedOption.value === "Ask AI"
+              ? "hover:bg-[#4A4A4A]"
+              : "opacity-50 cursor-not-allowed"
           }`}
           onClick={handleSearch}
           disabled={isAiSearching || selectedOption.value !== "Ask AI"}
@@ -252,7 +289,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       {showSuggestions && (
         <div
           ref={suggestionsRef}
-          className="absolute left-0 top-full mt-2 p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto rounded-lg shadow-lg w-full z-10"
+          className={`absolute left-0 top-full p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto rounded-lg shadow-lg w-full z-10 ${
+            selectedOption.value === "Search By Tag" ? "mt-28" : "mt-2"
+          }`}
         >
           <ul>
             {suggestions.map((suggestion) => (
