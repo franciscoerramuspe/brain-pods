@@ -94,10 +94,10 @@ export default function ScrollList({ title }: { title: string }) {
               backgroundPosition: "center",
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-70"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-70 backdrop-blur-sm"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-50"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50 backdrop-blur-sm"></div>
             <div className="absolute bottom-0 left-0 p-4 w-full">
-              <h1 className="text-4xl font-bold font-adversecase text-white drop-shadow-lg mb-2">
+              <h1 className="text-3xl font-bold font-adversecase mix-blend-difference">
                 {pod.name}
               </h1>
               <div className="flex flex-wrap gap-2 mt-2">

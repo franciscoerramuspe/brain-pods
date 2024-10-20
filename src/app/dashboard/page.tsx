@@ -54,8 +54,8 @@ export default function Dashboard() {
       {/* Contenido principal (puede crecer según el espacio disponible) */}
       <main className="p-4 flex-grow flex items-start justify-center overflow-hidden gap-15 mt-4">
         <div className="flex flex-col items-center justify-start gap-10 pt-0">
-          <ScrollList title="Math" />
-          <ScrollList title="Physics" />
+          <ScrollList title="Popular Tags" />
+          <ScrollList title="General Tags" />
         </div>
       </main>
 
