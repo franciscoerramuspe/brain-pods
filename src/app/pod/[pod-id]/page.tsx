@@ -1,11 +1,11 @@
 "use client"; 
 import dynamic from "next/dynamic";
 // import dotenv from "dotenv";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Snackbar } from "@/components/ui/snackbar";
-import { joinPodSession, checkPodStatus, leavePodSession, updatePodStatus } from "@/lib/podOperations";
+import { joinPodSession, leavePodSession, updatePodStatus } from "@/lib/podOperations";
 
 const appId = process.env.NEXT_PUBLIC_AGORA_API_KEY;
 
@@ -41,16 +41,6 @@ const PodPage = () => {
         }
         setUserId(user.id);
         userSession = user.id;
-
-        // const { isActive, hasEnded } = await checkPodStatus(podId);
-        
-        // if (!isActive || hasEnded) {
-        //   setPodExists(false);
-        //   setSnackbarMessage("This pod session has ended or is inactive.");
-        //   setIsSnackbarOpen(true);
-        //   setTimeout(() => router.push('/pod/new'), 1000);
-        //   return;
-        // }
 
         await joinPodSession(user.id, podId);
         setPodExists(true);

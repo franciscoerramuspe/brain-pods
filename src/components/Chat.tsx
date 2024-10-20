@@ -71,7 +71,7 @@ export default function Chat({ podId, user }: ChatProps) {
         supabase.removeChannel(subscriptionRef.current);
       }
     };
-  }, [podId]);
+  }, [podId, user.id]);
 
   // Fetch user names when messages change
   useEffect(() => {

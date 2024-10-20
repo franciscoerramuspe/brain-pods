@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "../../../components/Header";
 import ContextProvider from "../../../components/ContextProvider";
-import uploadEmbeddings from "@/app/api/files/route";
 import { TextContext } from "@/interfaces/types";
 
 export default function NewPod() {
@@ -27,29 +26,6 @@ export default function NewPod() {
     []
   ); // State for tags
 
-
-  // const handleCreatePod = async () => {
-  //   // INSERT POD INTO DATABASE, GET POD ID
-
-  //   let finalContext = "";
-
-  //   contextList.forEach(async (item) => {
-  //     if (item[0] instanceof File) {
-  //       const fileReader = new FileReader();
-  //       fileReader.onload = function (fileLoadedEvent) {
-  //         const textFromFileLoaded = fileLoadedEvent.target?.result;
-  //         finalContext += textFromFileLoaded;
-  //         finalContext += "\n";
-  //       };
-  //       fileReader.readAsText(item[0], "UTF-8");
-  //     } else {
-  //       finalContext += item[0].text;
-  //       finalContext += "\n";
-  //     }
-  //   });
-
-  //   // uploadEmbeddings({ podId: podName, context: finalContext });
-  // };
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -143,6 +119,22 @@ export default function NewPod() {
         if (topicError) throw topicError;
       }
 
+      // Hit the API endpoint to upload embeddings
+      const response = await fetch('/api/files', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          podId: podData.id,
+          context: finalContext,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload embeddings');
+      }
+
       // Redirect to the new pod
       router.push(`/pod/${podData.id}`);
     } catch (error) {
@@ -225,7 +217,7 @@ export default function NewPod() {
             <Button
               className="mt-4"
               onClick={createPod}
-            disabled={!podName || isCreatingPod}// Disable button during pod creation
+            disabled={!podName || isCreatingPod}
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
             >

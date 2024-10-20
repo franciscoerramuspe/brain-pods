@@ -26,7 +26,12 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export const Pod: React.FC<{ appId: string }> = ({ appId }) => {
+interface PodProps {
+  appId: string;
+  userId?: string | null;
+}
+
+export const Pod: React.FC<PodProps> = ({ appId, userId }) => {
   const router = useRouter();
   const params = useParams();
   const podId = params["pod-id"] as string;
