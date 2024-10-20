@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "../../../components/Header";
 import ContextProvider from "../../../components/ContextProvider";
+import uploadEmbeddings from "@/app/api/files/route";
+import { TextContext } from "@/interfaces/types";
 
 export default function NewPod() {
   const [user, setUser] = useState<User | null>(null);
@@ -17,6 +19,7 @@ export default function NewPod() {
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
+  const [contextList, setContextList] = useState<[TextContext | File][]>([]);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
 
   const tagsList = [
@@ -26,6 +29,29 @@ export default function NewPod() {
     { value: "svelte", label: "Svelte" },
     { value: "ember", label: "Ember" },
   ];
+
+  const handleCreatePod = async () => {
+    // INSERT POD INTO DATABASE, GET POD ID
+
+    let finalContext = "";
+
+    contextList.forEach(async (item) => {
+      if (item[0] instanceof File) {
+        const fileReader = new FileReader();
+        fileReader.onload = function (fileLoadedEvent) {
+          const textFromFileLoaded = fileLoadedEvent.target?.result;
+          finalContext += textFromFileLoaded;
+          finalContext += "\n";
+        };
+        fileReader.readAsText(item[0], "UTF-8");
+      } else {
+        finalContext += item[0].text;
+        finalContext += "\n";
+      }
+    });
+
+    // uploadEmbeddings({ podId: podName, context: finalContext });
+  };
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -88,13 +114,17 @@ export default function NewPod() {
                   maxCount={3}
                 />
               </div>
-              <ContextProvider />
+              <ContextProvider
+                contextList={contextList}
+                setContextList={setContextList}
+              />
             </div>
           </div>
           <Button
             className="mt-4 mb-0"
             onMouseOver={() => setIsButtonHovered(true)}
             onMouseLeave={() => setIsButtonHovered(false)}
+            onClick={handleCreatePod}
           >
             Create Pod
           </Button>
