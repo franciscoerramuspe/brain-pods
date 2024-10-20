@@ -13,9 +13,14 @@ export interface CardAnswer {
   correct: boolean;
 }
 
+export interface AnswerOption {
+  answer: string;
+  is_correct: boolean;
+}
+
 export interface CardMessage {
   question: string;
-  answers: CardAnswer[];
+  answers: AnswerOption[];
 }
 
 export interface ChatMessage {
