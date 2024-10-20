@@ -56,7 +56,7 @@ export default function NewPod() {
         if (error) throw error;
 
         const formattedTags = data.map((tag) => ({
-          value: tag.id,
+          value: tag.tag,
           label: tag.tag
             ? tag.tag
                 .toLowerCase()
@@ -98,7 +98,7 @@ export default function NewPod() {
         const { error: topicError } = await supabase.from("pod_topic").insert(
           podTags.map((tag) => ({
             pod_id: podData.id,
-            topic_name: tag,
+            topic_name: tag.toUpperCase(),
           }))
         );
 
