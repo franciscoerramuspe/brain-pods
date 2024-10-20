@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 // import dotenv from "dotenv";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Snackbar } from "@/components/ui/snackbar";
