@@ -20,15 +20,11 @@ export default function NewPod() {
   const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
   const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
+  const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
+    []
+  ); // State for tags
 
-  const tagsList = [
-    { value: "react", label: "React" },
-    { value: "angular", label: "Angular" },
-    { value: "vue", label: "Vue" },
-    { value: "svelte", label: "Svelte" },
-    { value: "ember", label: "Ember" },
-  ];
-
+  // Fetching user session
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -48,6 +44,34 @@ export default function NewPod() {
       authListener.subscription.unsubscribe();
     };
   }, [router]);
+
+  // Fetch tags from supabase
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("pod_tag")
+          .select("id, tag");
+
+        if (error) throw error;
+
+        const formattedTags = data.map((tag) => ({
+          value: tag.id,
+          label: tag.tag
+            ? tag.tag
+                .toLowerCase()
+                .replace(/\b\w/g, (c: string) => c.toUpperCase())
+            : "",
+        }));
+        console.log(data);
+        setTagsList(formattedTags);
+      } catch (error) {
+        console.error("Error fetching tags: ", error);
+      }
+    };
+
+    fetchTags();
+  }, []);
 
   const createPod = async () => {
     if (!user || !podName || podTags.length === 0) return;
@@ -126,7 +150,7 @@ export default function NewPod() {
                   }
                 />
                 <MultiSelect
-                  options={tagsList} // Using the dynamic tagsList
+                  options={tagsList} // Now using the state for tagsList
                   onValueChange={setPodTags}
                   defaultValue={podTags}
                   placeholder="Select Tags"
@@ -151,8 +175,9 @@ export default function NewPod() {
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
               onClick={createPod}
+              disabled={isCreatingPod} // Disable button during pod creation
             >
-              Create Pod
+              {isCreatingPod ? "Creating Pod..." : "Create Pod"}
             </Button>
           </div>
         </div>
