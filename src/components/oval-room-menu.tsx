@@ -13,7 +13,7 @@ export function OvalRoomMenu() {
   };
 
   return (
-    <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white border border-zinc-200 rounded-full shadow-lg px-6 py-3 dark:bg-zinc-950 dark:border-zinc-800">
+    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center space-x-4 bg-white border border-zinc-700 rounded-2xl shadow-lg px-2 py-1 dark:bg-zinc-700 dark:border-zinc-700">
       {/* Basics component */}
       <div className="flex-grow">
         <Basics />
@@ -24,7 +24,7 @@ export function OvalRoomMenu() {
 
       {/* Create Room Button */}
       <Button
-        className="h-10 w-10 flex items-center justify-center p-0 rounded-full bg-black hover:scale-105 transition-transform duration-300"
+        className="h-10 w-10 flex items-center justify-center p-0 rounded-full bg-500 hover:scale-105 transition-transform duration-300"
         variant="ghost"
         onClick={handleCreateRoom}
       >

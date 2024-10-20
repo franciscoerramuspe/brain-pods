@@ -38,14 +38,14 @@ export const Basics: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border-none rounded-full shadow-lg px-4 py-3 flex items-center space-x-3 dark:bg-zinc-950 dark:border-zinc-800 transition-all duration-300 ease-in-out transform ">
+    <div className="bg-white border-none  px-1 py-1 flex items-center space-x-3 dark:bg-zinc-700 transition-all duration-300 ease-in-out transform ">
       <input
         onChange={(e) => {
           setPodId(e.target.value);
           setIsSnackbarOpen(false);
         }}
         placeholder="Enter your code"
-        className="w-60 h-10 text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 px-4"
+        className="w-60 focus:outline-none h-10 text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 px-4"
         value={podId}
       />
       <button
