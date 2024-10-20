@@ -5,27 +5,31 @@ import { useEffect, useState } from "react";
 import Chat from '../Chat';
 import Header from "../Header";
 import {
-  MicrophoneIcon,
-  VideoIcon,
-  ChatIcon,
-  PhoneIcon,
-} from "../Icons";
+s  LocalUser,
+  RemoteUser,
+  useJoin,
+  useLocalMicrophoneTrack,
+  useLocalCameraTrack,
+  usePublish,
+  useRemoteUsers,
+  IAgoraRTCRemoteUser,
+} from "agora-rtc-react";
+import { MicrophoneIcon, VideoIcon, ChatIcon, PhoneIcon, BrainIcon, PlayIcon } from "../Icons";
+import { createClient, User } from "@supabase/supabase-js";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "../ui/button";
 import { supabase } from "../../lib/supabase";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
+import Chat from "../Chat";
 import { User } from "@supabase/supabase-js";
-import InteractiveCard from "../InteractiveCard";
-import { startSession } from "../../app/api/session/route";
-import { SocketMessage, CardMessage } from "../../interfaces/types";
-import { Button } from "../ui/button";
-import { PlayIcon, BrainIcon } from "lucide-react";
+import InteractiveCard from "./InteractiveCard";
 
-const participants = [
-  { name: "Brock Davis", image: "/path-to-brock-image.jpg" },
-  { name: "Jada Grimes", image: "/path-to-jada-image.jpg" },
-  { name: "Antwan Cannon", image: "/path-to-antwan-image.jpg" },
-  { name: "Macy Halloway", image: "/path-to-macy-image.jpg" },
-];
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function Pod({ podId }: { podId: string }) {
   const router = useRouter();
@@ -34,6 +38,7 @@ export default function Pod({ podId }: { podId: string }) {
   const [isHovered, setIsHovered] = useState(false);
   const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(null);
   const [isInteractiveCardOpen, setIsInteractiveCardOpen] = useState(false);
+  const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
     const getUser = async () => {
@@ -92,33 +97,6 @@ export default function Pod({ podId }: { podId: string }) {
       }
     };
   }, [podId, router]);
-
-  useEffect(() => {
-    const socket = new WebSocket('ws://your-websocket-server-url');
-
-    socket.onopen = () => {
-      console.log('WebSocket connection established');
-      // You can send an initial message here if needed
-      // socket.send('Hello from the pod page!');
-    };
-
-    socket.onmessage = (event) => {
-      console.log('Received message from server:', event.data);
-    };
-
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    socket.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    // Clean up the WebSocket connection when the component unmounts
-    return () => {
-      socket.close();
-    };
-  }, []);
 
   if (!user) {
     return <div>Loading...</div>;
