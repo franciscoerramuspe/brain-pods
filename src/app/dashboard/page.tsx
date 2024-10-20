@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
-import SearchBar from "../../components/SearchBar";
+import SearchBar from "../../components/searchbar/SearchBar";
 import { User } from "@supabase/supabase-js";
 import Header from "../../components/Header";
 import { OvalRoomMenu } from "../../components/oval-room-menu";
