@@ -173,14 +173,12 @@ export default function NewPod() {
             </Button>
             <Button
               className="mt-4"
-            onClick={createPod}
-            disabled={!podName || isCreatingPod}
+              onClick={createPod}
+            disabled={!podName || isCreatingPod}// Disable button during pod creation
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
-              onClick={createPod}
-              disabled={isCreatingPod} // Disable button during pod creation
             >
-            {isCreatingPod ? "Creating Pod..." : "  {isCreatingPod ? "Creating Pod..." : "Create Pod"}"}
+            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
             </Button>
           </div>
         </div>
