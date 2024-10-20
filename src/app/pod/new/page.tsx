@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "../../../components/Header";
 import ContextProvider from "../../../components/ContextProvider";
-import uploadEmbeddings from "@/app/api/files/route";
+import { uploadEmbeddings } from "@/app/api/files/route";
 import { TextContext } from "@/interfaces/types";
 
 export default function NewPod() {
@@ -26,7 +26,6 @@ export default function NewPod() {
   const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
     []
   ); // State for tags
-
 
   // const handleCreatePod = async () => {
   //   // INSERT POD INTO DATABASE, GET POD ID
@@ -143,6 +142,33 @@ export default function NewPod() {
         if (topicError) throw topicError;
       }
 
+      // Upload embeddings
+      let finalContext = "";
+
+      const processContextList = async () => {
+        for (const item of contextList) {
+          if (item[0] instanceof File) {
+            const fileContent = await new Promise<string>((resolve) => {
+              const fileReader = new FileReader();
+              fileReader.onload = (event) => {
+                resolve(event.target?.result as string);
+              };
+              fileReader.readAsText(item[0] as File);
+            });
+            finalContext += fileContent + "\n";
+          } else {
+            finalContext += (item[0] as TextContext).text + "\n";
+          }
+        }
+      };
+
+      await processContextList();
+
+      await uploadEmbeddings({
+        podId: podData.id,
+        context: finalContext,
+      });
+
       // Redirect to the new pod
       router.push(`/pod/${podData.id}`);
     } catch (error) {
@@ -225,11 +251,11 @@ export default function NewPod() {
             <Button
               className="mt-4"
               onClick={createPod}
-            disabled={!podName || isCreatingPod}// Disable button during pod creation
+              disabled={!podName || isCreatingPod} // Disable button during pod creation
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
             >
-            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
+              {isCreatingPod ? "Creating Pod..." : "Create Pod"}
             </Button>
           </div>
         </div>
