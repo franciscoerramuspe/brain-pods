@@ -19,6 +19,7 @@ const Pod = dynamic(
       </div>
     ),
   }
+)
 
 const PodPage = () => {
   const router = useRouter();
