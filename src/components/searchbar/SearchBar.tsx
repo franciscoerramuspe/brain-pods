@@ -3,34 +3,59 @@ import { LightningIcon, LetterIcon } from "../Icons";
 import Dropdown from "./Dropdown";
 import TagMenu from "./TagMenu";
 import { supabase } from "../../lib/supabase";
+import { Option, Pod, SearchBarProps } from "./types";
 
-const SearchBar: React.FC = () => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState({
+  const [selectedOption, setSelectedOption] = useState<Option>({
     value: "Search By Pod Name",
     label: "Pod Name",
     icon: <LetterIcon className="w-6 h-6 mr-2" stroke="white" />,
   });
   const [tags, setTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState(""); // Estado del texto de búsqueda
-  const [pods, setPods] = useState<any[]>([]);
-  const [suggestions, setSuggestions] = useState<any[]>([]); // Estado para las sugerencias
+  const [searchTerm, setSearchTerm] = useState("");
+  const [pods, setPods] = useState<Pod[]>([]);
+  const [suggestions, setSuggestions] = useState<Pod[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(event.target as Node) &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
       ) {
         setIsDropdownOpen(false);
+        setIsTagMenuOpen(false);
+      }
+    };
+
+    const handleSuggestionsClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        searchInputRef.current &&
+        !searchInputRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleSuggestionsClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("mousedown", handleSuggestionsClickOutside);
+    };
   }, []);
 
   useEffect(() => {
@@ -45,24 +70,21 @@ const SearchBar: React.FC = () => {
 
   useEffect(() => {
     const fetchPods = async () => {
-      // No continuar si no hay búsqueda por tags o por nombre
       if (searchTerm.length === 0 && selectedTags.length === 0) return;
 
       let query = supabase
         .from("pod")
         .select("*, pod_topic(topic_name)")
-        .eq("is_active", true) // Solo pods activos
-        .eq("is_public", true); // Solo pods públicos
+        .eq("is_active", true)
+        .eq("is_public", true);
 
-      // Filtro por nombre de pod si la opción "Search By Pod Name" está activada y el usuario está escribiendo
       if (
         searchTerm.length > 0 &&
         selectedOption.value === "Search By Pod Name"
       ) {
-        query = query.ilike("name", `%${searchTerm}%`); // Filtro por nombre del pod
+        query = query.ilike("name", `%${searchTerm}%`);
       }
 
-      // Filtro por tags seleccionados si la opción "Search By Tag" está activada
       if (selectedTags.length > 0 && selectedOption.value === "Search By Tag") {
         const { data: podTopicData, error } = await supabase
           .from("pod_topic")
@@ -73,7 +95,7 @@ const SearchBar: React.FC = () => {
           console.error("Error fetching pods by tags:", error);
         } else {
           const podIds = podTopicData.map((topic: any) => topic.pod_id);
-          query = query.in("id", podIds); // Filtrar por los pods encontrados con tags seleccionados
+          query = query.in("id", podIds);
         }
       }
 
@@ -88,14 +110,14 @@ const SearchBar: React.FC = () => {
 
         setPods(podsWithTags);
 
-        // Si estamos buscando por nombre, actualizamos las sugerencias
         if (
           searchTerm.length > 0 &&
           selectedOption.value === "Search By Pod Name"
         ) {
-          setSuggestions(podsWithTags); // Guardar las sugerencias si la búsqueda por nombre está activa
+          setSuggestions(podsWithTags);
+          setShowSuggestions(true); // Show suggestions when there are results
         } else {
-          setSuggestions([]); // Limpiar sugerencias si no hay búsqueda por nombre
+          setShowSuggestions(false); // Hide suggestions when there are no results
         }
       }
     };
@@ -103,10 +125,15 @@ const SearchBar: React.FC = () => {
     fetchPods();
   }, [selectedTags, searchTerm, selectedOption]);
 
-  // Add this new function
-  const handleOptionChange = (newOption: any) => {
+  const handleSearch = () => {
+    onSearch(searchTerm, selectedOption);
+  };
+
+  const handleOptionChange = (newOption: Option) => {
     setSelectedOption(newOption);
     if (newOption.value === "Search By Tag") {
+      setSearchTerm("Select tags to search");
+    } else {
       setSearchTerm("");
     }
   };
@@ -116,14 +143,15 @@ const SearchBar: React.FC = () => {
       return "Search by Pod Name";
     } else if (selectedOption.value === "Ask AI") {
       return "I want to study about...";
+    } else if (selectedOption.value === "Search By Tag") {
+      return "Select tags to search";
     }
     return "";
   };
 
   return (
     <div className="relative w-full max-w-2xl mx-auto">
-      {/* SearchBar Component */}
-      <div className="flex items-stretch bg-[#4A4A4A] rounded-2xl h-14 p-1">
+      <div className="relative flex items-stretch bg-[#4A4A4A] rounded-2xl h-14 p-1">
         <Dropdown
           isDropdownOpen={isDropdownOpen}
           setIsDropdownOpen={setIsDropdownOpen}
@@ -134,74 +162,78 @@ const SearchBar: React.FC = () => {
         />
 
         <input
+          ref={searchInputRef}
           type="text"
           placeholder={getPlaceholder()}
           className={`bg-[#323232] text-white placeholder-gray-400 flex-grow outline-none px-4 py-3 text-lg ${
-            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
+            selectedOption.value !== "Search By Pod Name"
               ? "cursor-not-allowed opacity-50"
               : ""
           }`}
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          disabled={
-            !["Search By Pod Name", "Ask AI"].includes(selectedOption.value)
-          }
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setShowSuggestions(e.target.value.length > 0);
+          }}
+          disabled={selectedOption.value !== "Search By Pod Name"}
+          readOnly={selectedOption.value === "Search By Tag"}
         />
 
-        <button className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl">
+        <button
+          className="bg-[#3D3D3D] px-4 flex items-center justify-center hover:bg-[#4A4A4A] transition-colors duration-300 rounded-r-2xl"
+          onClick={handleSearch}
+        >
           <LightningIcon className="w-8 h-8" stroke="white" />
         </button>
       </div>
 
-      {/* Mostrar sugerencias si el usuario está escribiendo y se encuentra en la opción de búsqueda por nombre */}
-      {suggestions.length > 0 &&
-        selectedOption.value === "Search By Pod Name" && (
-          <div className="mt-2 p-2 bg-[#3D3D3D] rounded-lg shadow-lg">
-            <ul>
-              {suggestions.map((suggestion: any) => (
-                <li
-                  key={suggestion.id}
-                  className="text-white bg-zinc-700 rounded-lg p-3 shadow-lg flex flex-col justify-between  mb-2"
-                >
-                  <div className="flex flex-row justify-between">
-                    <div>
-                      <p className="text-lg">{suggestion.name}</p>
-
-                      {/* Mostrar todas las etiquetas del pod debajo del nombre */}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {suggestion.tags.map((tag: string) => (
-                          <span
-                            key={tag}
-                            className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+      {showSuggestions && selectedOption.value === "Search By Pod Name" && (
+        <div
+          ref={suggestionsRef}
+          className="absolute left-0 top-full mt-2 p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto rounded-lg shadow-lg w-full z-10"
+        >
+          <ul>
+            {suggestions.map((suggestion) => (
+              <li
+                key={suggestion.id}
+                className="text-white bg-zinc-700 rounded-lg p-3 shadow-lg flex flex-col justify-between mb-2"
+              >
+                <div className="flex flex-row justify-between">
+                  <div>
+                    <p className="text-lg">{suggestion.name}</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {suggestion.tags.map((tag: string) => (
+                        <span
+                          key={tag}
+                          className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
-
-                    <button
-                      onClick={() =>
-                        (window.location.href = `/pod/${suggestion.id}`)
-                      } // Navegar a la sala seleccionada
-                      className="bg-white text-black font-semibold  px-8 py-2 rounded-lg mt-4 self-start"
-                    >
-                      Join Pod
-                    </button>
                   </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                  <button
+                    onClick={() =>
+                      (window.location.href = `/pod/${suggestion.id}`)
+                    }
+                    className="bg-white text-black font-semibold px-8 py-2 rounded-lg mt-4 self-start"
+                  >
+                    Join Pod
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-      {/* Dropdown (TagMenu) appears below without affecting SearchBar */}
       {isTagMenuOpen && (
         <TagMenu
           tags={tags}
           selectedTags={selectedTags}
           setSelectedTags={setSelectedTags}
           pods={pods}
+          menuRef={menuRef}
         />
       )}
     </div>

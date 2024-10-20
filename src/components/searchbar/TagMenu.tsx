@@ -1,9 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { JoinIcon } from "../Icons";
+import { TagMenuProps } from "./types";
 
-const TagMenu = ({ tags, selectedTags, setSelectedTags, pods }: any) => {
+const TagMenu: React.FC<TagMenuProps> = ({
+  tags,
+  selectedTags,
+  setSelectedTags,
+  pods,
+  menuRef,
+}) => {
+  const router = useRouter();
+
   const handleTagSelect = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t: string) => t !== tag));
@@ -12,17 +20,15 @@ const TagMenu = ({ tags, selectedTags, setSelectedTags, pods }: any) => {
     }
   };
 
-  const router = useRouter();
-
   return (
     <motion.div
+      ref={menuRef}
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
       exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.3 }}
-      className="absolute top-full left-0 mt-2 bg-[#3D3D3D] rounded-lg shadow-lg w-full z-10"
+      className="absolute top-full left-0 mt-2 bg-[#3D3D3D] rounded-lg shadow-lg w-full z-10 max-h-[60vh] overflow-y-auto"
     >
-      {/* Scroll horizontal para los tags */}
       <div className="flex space-x-2 overflow-x-auto mb-4 p-4">
         {tags.map((tag: string) => (
           <button
@@ -39,11 +45,10 @@ const TagMenu = ({ tags, selectedTags, setSelectedTags, pods }: any) => {
         ))}
       </div>
 
-      {/* Lista vertical de pods filtrados debajo del scroll de tags */}
       {pods.length > 0 && (
         <div className="mt-2 p-2">
           <ul>
-            {pods.map((pod: any) => (
+            {pods.map((pod) => (
               <li
                 key={pod.id}
                 className="text-white bg-zinc-700 rounded-lg p-3 shadow-lg flex flex-col justify-between mb-2"
@@ -51,8 +56,6 @@ const TagMenu = ({ tags, selectedTags, setSelectedTags, pods }: any) => {
                 <div className="flex flex-row justify-between">
                   <div>
                     <p className="text-lg">{pod.name}</p>
-
-                    {/* Mostrar todas las etiquetas del pod debajo del nombre */}
                     <div className="flex flex-wrap gap-2 mt-2">
                       {pod.tags.map((tag: string) => (
                         <span
@@ -64,12 +67,11 @@ const TagMenu = ({ tags, selectedTags, setSelectedTags, pods }: any) => {
                       ))}
                     </div>
                   </div>
-
                   <button
                     onClick={() => router.push(`/pod/${pod.id}`)}
-                    className="bg-white text-black font-semibold  px-8 py-2 rounded-lg mt-4 self-start"
+                    className="bg-white text-black font-semibold px-8 py-2 rounded-lg mt-4 self-start"
                   >
-                    <p>Join Pod</p>
+                    Join Pod
                   </button>
                 </div>
               </li>
