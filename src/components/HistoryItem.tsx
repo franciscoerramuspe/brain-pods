@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from './Header';
@@ -20,7 +21,7 @@ interface PodSession {
   }
   
 
-export default function HistoryItem({ session }: { session: PodSession }) {
+export default function HistoryItem() {
   const [user, setUser] = useState<User | null>(null);
   const [podSessions, setPodSessions] = useState<PodSession[]>([]);
   const router = useRouter();
@@ -92,8 +93,9 @@ export default function HistoryItem({ session }: { session: PodSession }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#323232] text-white">
-      <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
+    <>
+      <div className="min-h-screen bg-[#323232] text-white">
+        <Header user={user} textIsDisplayed={true} userIsDisplayed={true} />
       <main className="p-6">
         <h1 className="text-3xl font-bold mb-6">History</h1>
         <div className="space-y-4">
@@ -121,6 +123,7 @@ export default function HistoryItem({ session }: { session: PodSession }) {
           ))}
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }
