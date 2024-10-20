@@ -27,8 +27,13 @@ import { Separator } from "@/components/ui/separator";
 import { useState, useRef } from "react";
 import { TextContext } from "@/interfaces/types";
 
-export default function ContextProvider() {
-  const [contextList, setContextList] = useState<[TextContext | File][]>([]);
+export default function ContextProvider({
+  contextList,
+  setContextList,
+}: {
+  contextList: [TextContext | File][];
+  setContextList: React.Dispatch<React.SetStateAction<[TextContext | File][]>>;
+}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textInputRef = useRef<HTMLButtonElement>(null);
 
@@ -57,12 +62,8 @@ export default function ContextProvider() {
   const handleFileUpload = () => {
     if (fileInputRef.current) {
       const file = fileInputRef.current.files?.[0];
-      // Validate file type (only pdf or txt) and size (max 10mb)
-      if (
-        file &&
-        (file.type === "application/pdf" || file.type === "text/plain") &&
-        file.size <= 10 * 1024 * 1024
-      ) {
+      // Validate file type (only txt) and size (max 10mb)
+      if (file && file.type === "text/plain" && file.size <= 10 * 1024 * 1024) {
         setContextList((prevList) => [...prevList, [file]]);
       } else {
         alert("Invalid file type or size");
