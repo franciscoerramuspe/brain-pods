@@ -3,12 +3,20 @@ import { supabase } from "./supabase";
 
 export async function joinPodSession(userId: string, podId: string) {
     // Start a transaction
-    const { error: transactionError } = await supabase.rpc('join_pod_session', {
+    try {
+    const {data, error} = await supabase.rpc('join_pod_session', {
         p_user_id: userId,
         p_pod_id: podId
     });
-    if (transactionError) throw transactionError;
+
+    if (error) throw error;
+
+    return data;
+  } catch (error) {
+    console.error('Unexpected error in joinPodSession:', error);
+    return null;
   }
+}
 
   export async function leavePodSession(userId: string, podId: string) {
     console.log('Leaving pod session for user:', userId, 'and pod:', podId);
@@ -36,32 +44,14 @@ export async function joinPodSession(userId: string, podId: string) {
           is_active: false,
           left_at: new Date().toISOString()
         })
-        .eq('id', activeSession.id );
+        .eq('id', activeSession.id )
+        .select();
     
-      if (updateError) {
+      
+    if (updateError) {
         console.error('Error updating user pod session:', updateError);
-        // If the error is due to no rows being affected, the session might have already been closed
-        if (updateError.code === 'PGRST116') {
-          console.log('No rows were updated. Session might have already been closed.');
-          // Fetch the current state of the session
-          const { data: currentSession, error: fetchError } = await supabase
-            .from('user_pod_session')
-            .select('*')
-            .match({ id: activeSession.id })
-            .single();
-  
-          if (fetchError) {
-            console.error('Error fetching current session state:', fetchError);
-          } else {
-            console.log('Current session state:', currentSession);
-            // If the session is already inactive, consider it successfully closed
-            if (!currentSession.is_active) {
-              return currentSession;
-            }
-          }
-        }
         return null;
-      }
+    }
   
       console.log('Successfully updated session:', updatedSession);
       return updatedSession;
