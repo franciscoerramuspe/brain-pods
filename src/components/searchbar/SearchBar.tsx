@@ -289,8 +289,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       {showSuggestions && (
         <div
           ref={suggestionsRef}
-          className={`absolute left-0 top-full p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto rounded-lg shadow-lg w-full z-10 ${
-            selectedOption.value === "Search By Tag" ? "mt-28" : "mt-2"
+          className={`absolute left-0 top-full p-2 bg-[#3D3D3D] max-h-[60vh] overflow-y-auto shadow-lg w-full z-10 ${
+            selectedOption.value === "Search By Tag"
+              ? "mt-28 rounded-b-lg rounded-t-none pt-2"
+              : "mt-2 rounded-lg"
           }`}
         >
           <ul>

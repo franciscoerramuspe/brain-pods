@@ -12,13 +12,13 @@ import {
 } from "agora-rtc-react";
 import { createClient, User } from "@supabase/supabase-js";
 import InteractiveCard from "@/components/InteractiveCard";
-import { startSession } from "@/app/api/session/route";
 import { SocketMessage, CardMessage } from "@/interfaces/types";
 import { Button } from "@/components/ui/button";
 import { PlayIcon, BrainIcon } from "lucide-react";
 import Controls from "./Controls";
 import UserGrid from "./UserGrid";
 import UserTracker from "@/components/UserTracker";
+import { startSession } from "@/app/api/session/route";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -147,6 +147,33 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
     }
   };
 
+  const handleStartSession = async () => {
+    try {
+      if (!podId) {
+        console.error("Pod ID is not available");
+        return;
+      }
+      const response = await fetch("/api/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ podId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Session started successfully:", result);
+      // Handle successful session start (e.g., update UI, show a message)
+    } catch (error) {
+      console.error("Error starting session:", error);
+      // Handle error (e.g., show error message to user)
+    }
+  };
+
   // Render the loading screen if no podId or user is present
   if (!podId || !user) return <div>Loading...</div>;
 
@@ -163,7 +190,7 @@ const Pod: React.FC<{ appId: string }> = ({ appId }) => {
       {/* Start Session Button */}
       <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-50">
         <Button
-          onClick={() => startSession({ podId })}
+          onClick={handleStartSession}
           disabled={wsStatus === "Disconnected"}
           className="bg-[#46178f] hover:bg-[#5a1cb3] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors duration-300 ease-in-out flex items-center justify-center overflow-hidden group"
           onMouseEnter={() => setIsHovered(true)}
