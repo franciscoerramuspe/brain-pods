@@ -51,18 +51,18 @@ const UserGrid: React.FC<UserGridProps> = ({
               cameraOn={cameraOn}
               micOn={micOn}
               videoTrack={localCameraTrack}
-              cover="/path-to-your-cover-image.jpg"
+              cover="/images/cover.jpg"
               className="w-full h-full"
             />
           ) : user.uid !== "local" ? (
             <RemoteUser
               user={user as IAgoraRTCRemoteUser}
-              cover="/path-to-your-cover-image.jpg"
+              cover="/images/cover.jpg"
               className="w-full h-full"
             />
           ) : (
             <Image
-              src="/images/placeholder.jpg"
+              src="/images/cover.jpg"
               alt="You"
               className="w-full h-auto"
               width={100}
