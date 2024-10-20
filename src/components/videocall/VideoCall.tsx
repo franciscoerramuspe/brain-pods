@@ -47,9 +47,14 @@ export const Basics: React.FC = () => {
         placeholder="Enter your code"
         value={podId}
         className="w-full p-2 rounded-md bg-gray-800 text-white"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && podId) {
+            router.push(`/pod/${podId}`);
+          }
+        }}
       />
       <button
-        className={`join-podId px-4 py-2 rounded-md bg-gray-800 text-white ${
+        className={`join-podId px-4 py-2 rounded-md hover:cursor-pointer bg-gray-800 text-white ${
           !podId || isLoading ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={!podId || isLoading}
@@ -60,7 +65,7 @@ export const Basics: React.FC = () => {
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
           </div>
         ) : (
-          <span>Join Room</span>
+          <span>Join</span>
         )}
       </button>
       <Snackbar

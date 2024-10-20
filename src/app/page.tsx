@@ -12,13 +12,11 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "SIGNED_IN") {
-          router.push("/dashboard");
-        }
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        router.push("/dashboard");
       }
-    );
+    });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -50,7 +48,7 @@ export default function Home() {
       </div>
       {isModalOpen ? (
         <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md"
           onClick={() => setIsModalOpen(false)} // Cierra el modal al hacer clic afuera
         >
           <div
