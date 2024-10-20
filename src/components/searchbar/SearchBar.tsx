@@ -54,7 +54,9 @@ const SearchBar: React.FC = () => {
         const { data: podData, error: podError } = await supabase
           .from("pod")
           .select("*")
-          .in("id", podIds);
+          .in("id", podIds)
+          .eq("is_active", true) // Solo pods activos
+          .eq("is_public", true); // Solo pods públicos
 
         if (podError) console.error("Error fetching pods:", podError);
         else setPods(podData);
