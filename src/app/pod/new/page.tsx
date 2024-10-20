@@ -21,8 +21,8 @@ export default function NewPod() {
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
 
   const tagsList = [
-    { value: "react", label: "React" },
-    { value: "angular", label: "Angular" },
+    { value: "MATH", label: "MATH" },
+    { value: "CHEMISTRY", label: "CHEMISTRY" },
     { value: "vue", label: "Vue" },
     { value: "svelte", label: "Svelte" },
     { value: "ember", label: "Ember" },
@@ -130,36 +130,15 @@ export default function NewPod() {
             </div>
           </div>
           <Button
-            className="mt-4 mb-0"
+            className="mt-4"
+            onClick={createPod}
+            disabled={!podName || isCreatingPod}
             onMouseOver={() => setIsButtonHovered(true)}
             onMouseLeave={() => setIsButtonHovered(false)}
           >
-            Create Pod
+            {isCreatingPod ? "Creating Pod..." : "Create Pod"}
           </Button>
         </div>
-        <div className="flex flex-col items-center justify-center">
-          <div className="flex flex-col p-4 max-w-xl w-full gap-4">
-            <Input
-              type="text"
-              placeholder="Pod Name"
-              value={podName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPodName(e.target.value)
-              }
-            />
-            <MultiSelect
-              options={tagsList}
-              onValueChange={setPodTags}
-              defaultValue={podTags}
-              placeholder="Select tags"
-              animation={0}
-              maxCount={3}
-            />
-          </div>
-          <ContextProvider />
-        </div>
-
-        <Button className="mt-4" onClick={createPod} disabled={!podName || isCreatingPod}>{isCreatingPod ? "Creating Pod..." : "Create Pod"}</Button>
       </div>
     </div>
   );
