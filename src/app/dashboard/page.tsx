@@ -6,12 +6,10 @@ import { supabase } from "../../lib/supabase";
 import SearchBar from "../../components/SearchBar";
 import { User } from "@supabase/supabase-js";
 import Header from "../../components/Header";
-import { Basics } from "../../components/videocall/VideoCall";
 import { OvalRoomMenu } from "../../components/oval-room-menu";
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -55,19 +53,6 @@ export default function Dashboard() {
       <footer className="relative">
         <OvalRoomMenu />
       </footer>
-      {isModalOpen ? (
-        <div
-          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-md"
-          onClick={() => setIsModalOpen(false)} // Cierra el modal al hacer clic afuera
-        >
-          <div
-            className="rounded-md"
-            onClick={(e) => e.stopPropagation()} // Evita que el clic dentro del modal cierre el overlay
-          >
-            <Basics />
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

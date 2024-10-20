@@ -38,17 +38,18 @@ export const Basics: React.FC = () => {
   };
 
   return (
-    <div className="join-room flex flex-col gap-4 bg-gray-800 p-4 rounded-md h-full w-full ">
+    <div className="bg-white border-none rounded-full shadow-lg px-4 py-3 flex items-center space-x-3 dark:bg-zinc-950 dark:border-zinc-800 transition-all duration-300 ease-in-out transform ">
       <input
         onChange={(e) => {
           setPodId(e.target.value);
           setIsSnackbarOpen(false);
         }}
         placeholder="Enter your code"
+        className="w-60 h-10 text-sm bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 px-4"
         value={podId}
       />
       <button
-        className={`join-podId px-4 py-2 rounded-md bg-gray-800 text-white ${
+        className={`px-6 py-2 rounded-md bg-gradient-to-r bg-white text-black font-semibold shadow-md hover:shadow-lg transform transition-all duration-300 ease-in-out ${
           !podId || isLoading ? "opacity-50 cursor-not-allowed" : ""
         }`}
         disabled={!podId || isLoading}
@@ -59,7 +60,7 @@ export const Basics: React.FC = () => {
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
           </div>
         ) : (
-          <span>Join Room</span>
+          <span>Join Pod</span>
         )}
       </button>
       <Snackbar

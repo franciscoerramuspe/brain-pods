@@ -12,42 +12,24 @@ import ContextProvider from "../../../components/ContextProvider";
 
 export default function NewPod() {
   const [user, setUser] = useState<User | null>(null);
-  const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
-    []
-  );
   const router = useRouter();
 
   // Pod Variables
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
-<<<<<<< HEAD
+  const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
   const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
-=======
-  const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
->>>>>>> e0635beb53865150b5681b2076059bc3ae51d227
 
-  // Fetch the enum values for "tags" from Supabase
+  const tagsList = [
+    { value: "react", label: "React" },
+    { value: "angular", label: "Angular" },
+    { value: "vue", label: "Vue" },
+    { value: "svelte", label: "Svelte" },
+    { value: "ember", label: "Ember" },
+  ];
+
   useEffect(() => {
-    const fetchTags = async () => {
-      const { data, error } = await supabase
-        .from("pod_topic")
-        .select("id, topic_name");
-      if (error) {
-        console.error("Error fetching tags:", error);
-      } else {
-        // Assuming the tags come in a specific format, adapt accordingly:
-        const formattedTags = data.map((tag) => ({
-          value: tag.id,
-          label: tag.topic_name,
-        }));
-        setTagsList(formattedTags);
-      }
-    };
-
-    fetchTags();
-
-    // Handle authentication session
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "SIGNED_IN") {
@@ -73,35 +55,39 @@ export default function NewPod() {
     setIsCreatingPod(true);
 
     try {
-      const { data: podData, error: podError } = await supabase.from("pod").insert({
-        owner_id: user?.id,
-        is_active: true,
-        is_premium: false,
-        is_public: true,
-      })
-      .select()
-      .single();
+      const { data: podData, error: podError } = await supabase
+        .from("pod")
+        .insert({
+          owner_id: user?.id,
+          is_active: true,
+          is_premium: false,
+          is_public: true,
+        })
+        .select()
+        .single();
 
-    if (podError) throw podError;
+      if (podError) throw podError;
 
-    // Insert pod topics
-    if (podTags.length > 0) {
-      const { error: topicError } = await supabase.from("pod_topic").insert(podTags.map(tag => ({
-        pod_id: podData.id,
-        topic_name: tag,
-      })));
+      // Insert pod topics
+      if (podTags.length > 0) {
+        const { error: topicError } = await supabase.from("pod_topic").insert(
+          podTags.map((tag) => ({
+            pod_id: podData.id,
+            topic_name: tag,
+          }))
+        );
 
-      if (topicError) throw topicError;
+        if (topicError) throw topicError;
+      }
+
+      // Redirect to the new pod
+      router.push(`/pod/${podData.id}`);
+    } catch (error) {
+      console.error("Error creating pod: ", error);
+    } finally {
+      setIsCreatingPod(false);
     }
-
-    // Redirect to the new pod
-    router.push(`/pod/${podData.id}`);
-  } catch (error) {
-    console.error('Error creating pod: ', error);
-  } finally {
-    setIsCreatingPod(false);
-  }
-};
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -116,7 +102,6 @@ export default function NewPod() {
           New Pod
         </h1>
 
-<<<<<<< HEAD
         <div className="flex-grow flex flex-col items-center justify-center mt-8">
           <div
             className={`flex flex-col items-center justify-center w-fit rounded-lg p-0 transition-all duration-300  ${
@@ -165,14 +150,12 @@ export default function NewPod() {
               className="mt-4 mb-0"
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
+              onClick={createPod}
             >
               Create Pod
             </Button>
           </div>
         </div>
-=======
-        <Button className="mt-4" onClick={createPod} disabled={!podName || isCreatingPod}>{isCreatingPod ? "Creating Pod..." : "Create Pod"}</Button>
->>>>>>> e0635beb53865150b5681b2076059bc3ae51d227
       </div>
     </div>
   );
