@@ -62,6 +62,7 @@ export const LogoutIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     />
   </svg>
 );
+
 export const LightningIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
   props
 ) => (

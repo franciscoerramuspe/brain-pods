@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Header from "../../../components/Header";
 import ContextProvider from "../../../components/ContextProvider";
+import uploadEmbeddings from "@/app/api/files/route";
+import { TextContext } from "@/interfaces/types";
 
 export default function NewPod() {
   const [user, setUser] = useState<User | null>(null);
@@ -18,13 +20,37 @@ export default function NewPod() {
   const [podName, setPodName] = useState<string>("");
   const [podTags, setPodTags] = useState<string[]>([]);
   const [isCreatingPod, setIsCreatingPod] = useState<boolean>(false);
+  const [contextList, setContextList] = useState<[TextContext | File][]>([]);
   const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
   const [isCancelHovered, setIsCancelHovered] = useState<boolean>(false);
   const [tagsList, setTagsList] = useState<{ value: string; label: string }[]>(
     []
   ); // State for tags
 
-  // Fetching user session
+
+  const handleCreatePod = async () => {
+    // INSERT POD INTO DATABASE, GET POD ID
+
+    let finalContext = "";
+
+    contextList.forEach(async (item) => {
+      if (item[0] instanceof File) {
+        const fileReader = new FileReader();
+        fileReader.onload = function (fileLoadedEvent) {
+          const textFromFileLoaded = fileLoadedEvent.target?.result;
+          finalContext += textFromFileLoaded;
+          finalContext += "\n";
+        };
+        fileReader.readAsText(item[0], "UTF-8");
+      } else {
+        finalContext += item[0].text;
+        finalContext += "\n";
+      }
+    });
+
+    // uploadEmbeddings({ podId: podName, context: finalContext });
+  };
+
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -159,7 +185,10 @@ export default function NewPod() {
                   maxCount={3}
                 />
               </div>
-              <ContextProvider />
+              <ContextProvider
+                contextList={contextList}
+                setContextList={setContextList}
+              />
             </div>
           </div>
           <div className="flex flex-row gap-4">
@@ -177,6 +206,7 @@ export default function NewPod() {
             disabled={!podName || isCreatingPod}// Disable button during pod creation
               onMouseOver={() => setIsButtonHovered(true)}
               onMouseLeave={() => setIsButtonHovered(false)}
+              onClick={handleCreatePod}
             >
             {isCreatingPod ? "Creating Pod..." : "Create Pod"}
             </Button>
