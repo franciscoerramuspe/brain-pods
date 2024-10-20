@@ -17,6 +17,9 @@ import { User } from "@supabase/supabase-js";
 import InteractiveCard from "@/components/InteractiveCard";
 import { startSession } from "@/app/api/session/route";
 import { SocketMessage, CardMessage } from "@/interfaces/types";
+import { Button } from "@/components/ui/button";
+import { PlayIcon, BrainIcon } from "lucide-react";
+
 const participants = [
   { name: "Brock Davis", image: "/path-to-brock-image.jpg" },
   { name: "Jada Grimes", image: "/path-to-jada-image.jpg" },
@@ -32,6 +35,7 @@ export default function PodMeeting() {
     : params["pod-id"];
   const [user, setUser] = useState<User | null>(null);
   const [wsStatus, setWsStatus] = useState<string>("Not connected");
+  const [isHovered, setIsHovered] = useState(false);
 
   const [socketMessage, setSocketMessage] = useState<SocketMessage | null>(
     null
@@ -109,12 +113,28 @@ export default function PodMeeting() {
           message={socketMessage?.data as CardMessage}
           isOpen={isInteractiveCardOpen}
         />
-        <button
-          onClick={() => startSession({ podId })}
-          disabled={wsStatus == "Disconnected"}
-        >
-          Start Session
-        </button>
+        <div className="flex justify-center mt-6 mb-8">
+          <Button
+            onClick={() => startSession({ podId })}
+            disabled={wsStatus === "Disconnected"}
+            className="bg-[#46178f] hover:bg-[#5a1cb3] text-white font-bold py-3 px-8 rounded-full shadow-lg transition-colors duration-300 ease-in-out flex items-center justify-center overflow-hidden group"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <div className="flex items-center space-x-2 transition-transform duration-300 ease-in-out group-hover:scale-110 origin-center">
+              <span className="text-base">
+                Start Session
+              </span>
+              <span>
+                {isHovered ? (
+                  <BrainIcon className="w-5 h-5" />
+                ) : (
+                  <PlayIcon className="w-5 h-5" />
+                )}
+              </span>
+            </div>
+          </Button>
+        </div>
         <div className="p-6">
           <div className="grid grid-cols-2 gap-4 max-w-4xl mx-auto">
             {participants.map((participant, index) => (
