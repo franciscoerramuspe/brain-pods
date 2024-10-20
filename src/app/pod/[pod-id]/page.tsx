@@ -48,7 +48,7 @@ const PodPage = () => {
           setPodExists(false);
           setSnackbarMessage("This pod session has ended or is inactive.");
           setIsSnackbarOpen(true);
-          setTimeout(() => router.push('/pod/new'), 3000);
+          setTimeout(() => router.push('/pod/new'), 1000);
           return;
         }
 
@@ -59,7 +59,7 @@ const PodPage = () => {
         setPodExists(false);
         setSnackbarMessage("Error joining pod");
         setIsSnackbarOpen(true);
-        setTimeout(() => router.push('/pod/new'), 3000);
+        setTimeout(() => router.push('/pod/new'), 1000);
       }
     };
 

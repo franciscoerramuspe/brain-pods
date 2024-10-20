@@ -7,7 +7,7 @@ interface SnackbarProps {
   duration?: number;
 }
 
-const Snackbar: React.FC<SnackbarProps> = ({ message, isOpen, onClose, duration = 3000 }) => {
+const Snackbar: React.FC<SnackbarProps> = ({ message, isOpen, onClose, duration = 1000 }) => {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {

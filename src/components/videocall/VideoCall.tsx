@@ -26,12 +26,12 @@ export const Basics: React.FC = () => {
         router.push(`/pod/${podId}`);
       } else {
         setIsSnackbarOpen(true);
-        setTimeout(() => setIsSnackbarOpen(false), 3000);
+        setTimeout(() => setIsSnackbarOpen(false), 1000);
       }
     } catch (error) {
       console.error('Error joining pod: ', error);
       setIsSnackbarOpen(true);
-      setTimeout(() => setIsSnackbarOpen(false), 3000);
+      setTimeout(() => setIsSnackbarOpen(false), 1000);
     } finally {
       setIsLoading(false);
     }
